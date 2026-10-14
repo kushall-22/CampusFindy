@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CampusFindy — Lost & Found</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" type="image/x-icon" href="CampusFindly.ico">
+  
+</head>
+<body>
+
+  <!--<header class="topbar">
+  <a class="brand" href="index.html">
+    <img src="./CampusFindly-removebg-preview.png" alt="CampusFindy Logo" class="brand-logo">
+    <span>ampusFindy</span>
+  </a>-->
+
+    <header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="brand-logo" aria-hidden="true"></span>
+    <span>ampusFindy</span>
+  </a>
+
+  <nav class="nav-links" aria-label="Main navigation">
+  <div class="menu-wrap">
+    <button type="button" class="menu-btn" id="menuBtn"
+            aria-label="More options" aria-haspopup="true" aria-expanded="false">⋮</button>
+
+    <div class="menu-dropdown" id="menuDropdown" hidden>
+      <a class="menu-item" href="index.html">Home</a>
+      <a class="menu-item" href="dashboard.html">Dashboard</a>
+      <button type="button" class="menu-item" id="themeToggle">☾ Dark</button>
+      <button type="button" class="menu-item" id="logoutBtn">Logout</button>
+    </div>
+  </div>
+</nav>
+  <!--<nav class="nav-links" aria-label="Main navigation">
+    <a href="index.html">Home</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="post.html">Report an item</a>
+    <button type="button" class="theme-toggle" id="themeToggle">☾ Dark</button>
+  </nav>-->
+
+</header>
+
+  <section class="hero">
+    <h1>Because lost shouldn't mean gone.</h1>
+    <p class="tagline">Lost something on campus? Found something that isn't yours? Campus Findy helps students report and recover lost items quickly and easily.</p>
+  <!-- <p class="tagline">Every item posted here goes straight back to the right person — browse what's been lost or found around campus, or report your own.</p>-->
+  </section>
+
+  <div class="board-strip">
+    <div class="filter-row">
+      <input type="text" id="searchInput" placeholder="Search by item name or location..." />
+      <div class="status-toggle">
+        <button data-status="all" class="active">All</button>
+        <button data-status="lost">Lost</button>
+        <button data-status="found">Found</button>
+      </div>
+      <a href="post.html"><button class="report-btn">+ Report item</button></a>
+    </div>
+  </div>
+
+  <main class="board" id="board">
+    <!-- Item cards are rendered here by script.js -->
+  </main>
+
+  <footer>
+    <mark>CampusFindy — built by students, for students.</mark>
+  </footer>
+
+  <div id="claimModal" class="modal-overlay" style="display: none;">
+  <div class="modal-box">
+    <h2 id="claimItemTitle">Item</h2>
+    <p class="sub" id="claimQuestionText"></p>
+
+    <div class="field" id="claimAnswerField">
+      <label for="claimAnswerInput">Your answer</label>
+      <input type="text" id="claimAnswerInput" placeholder="Type your answer here" />
+    </div>
+
+    <p id="claimResultText" style="display: none;"></p>
+
+    <div class="modal-actions">
+      <button type="button" id="claimCancelBtn" class="secondary-btn">Close</button>
+      <button type="button" id="claimSubmitBtn" class="submit-btn">Submit Answer</button>
+    </div>
+  </div>
+</div>
+
+  <script type="module" src="script.js"></script>
+  <script src="theme.js"></script>
+</body>
+</html>

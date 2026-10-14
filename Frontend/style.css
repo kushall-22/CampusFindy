@@ -1,0 +1,1081 @@
+/* ==========================================================================
+   CampusFindy — Stylesheet
+   Concept: campus notice board. Items are "pinned" notes on a cork strip.
+   Lost = terracotta pin, Found = green pin.
+
+   CONTENTS
+   1.  Theme variables (light + dark)
+   2.  Base styles
+   3.  Top bar / navigation
+   4.  Landing page
+   5.  Hero
+   6.  Dashboard
+   7.  Search / filter strip
+   8.  Item grid, note cards, claimed items
+   9.  Forms (post.html)
+   10. Login page
+   11. Modals
+   12. Footer
+   13. Responsive (keep this last so it overrides the rules above)
+   ========================================================================== */
+
+
+/* ==========================================================================
+   1. Theme variables
+   ========================================================================== */
+
+:root {
+  --paper: #f5efe3;
+  --card: #fffdf8;
+  --cork: #3f6b52;
+  --cork-dark: #2f5140;
+  --ink: #24314b;
+  --ink-soft: #55617a;
+  --lost: #c1442b;
+  --found: #3f7d5c;
+  --line: #ddd3bd;
+  --radius: 10px;
+  --shadow: 0 2px 6px rgba(36, 49, 75, 0.12);
+  --action: #2d6cdf;
+  --action-hover: #1e4fa3;
+  --action-text: #ffffff;
+}
+
+[data-theme="dark"] {
+  --paper: #20252b;
+  --card: #2b3138;
+  --cork: #3b454b;
+  --cork-dark: #252c31;
+  --ink: #f1f3f4;
+  --ink-soft: #bac2c8;
+  --line: #4a555d;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --action: #78a9ff;
+  --action-hover: #9fc1ff;
+  --action-text: #182235;
+}
+
+
+/* ==========================================================================
+   2. Base styles
+   ========================================================================== */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Fredoka", sans-serif;
+  color: var(--ink);
+  background: var(--paper);
+  line-height: 1.5;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Background image: add class="page-bg" to <body> on pages that need it
+   (leave it off dashboard.html) */
+.page-bg {
+  background-image:
+    linear-gradient(
+      rgba(245, 239, 227, 0.35),
+      rgba(245, 239, 227, 0.65)
+    ),
+    url("Campus-background.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed; /* image stays still while page scrolls */
+}
+
+/* Dark mode: darker overlay for pages using .page-bg */
+[data-theme="dark"].page-bg,
+[data-theme="dark"] .page-bg {
+  background-image:
+    linear-gradient(
+      rgba(32, 37, 43, 0.65),
+      rgba(32, 37, 43, 0.85)
+    ),
+    url("Campus-background.png");
+}
+
+h1, h2, h3, .brand {
+  font-family: "Arial", "Inter", sans-serif;
+  font-weight: 600;
+  margin: 0;
+  text-align: left;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* Native form controls follow the current theme */
+button,
+input,
+textarea,
+select {
+  color-scheme: light;
+}
+
+[data-theme="dark"] button,
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+  color-scheme: dark;
+}
+
+
+/* ==========================================================================
+   3. Top bar / navigation
+   ========================================================================== */
+
+.topbar {
+  background: var(--cork);
+  border-bottom: 4px solid var(--cork-dark);
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  
+}
+
+/* Brand + logo */
+
+.brand {
+  display: flex;
+  align-items: center;
+  font-family: "Fredoka", "Inter", sans-serif;
+  font-size: 28px;
+  font-weight: 400;
+  line-height: 1;
+  color: white;
+}
+
+.brand:hover,
+.brand:focus-visible {
+  color: #ffd9a0;
+}
+
+.brand-logo {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  display: block;
+  background-image: url("./CampusFindly-removebg-preview1.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  margin-right: -4px;
+}
+
+.logo-light {
+  width: 76px;
+  height: 76px;
+  display: block;
+}
+
+.logo-dark {
+  width: 96px;
+  height: 96px;
+  display: none;
+}
+
+[data-theme="dark"] .logo-light {
+  width: 56px;
+  height: 56px;
+  display: none;
+}
+
+[data-theme="dark"] .logo-dark {
+  width: 56px;
+  height: 56px;
+  display: block;
+}
+
+/* Nav links */
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.nav-links a {
+  color: #f5efe3;
+  font-size: 0.95rem;
+  padding: 6px 4px;
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.15s ease;
+}
+
+.nav-links a:hover,
+.nav-links a:focus-visible {
+  border-color: #ffd9a0;
+}
+
+/* Links inside the dropdown */
+.nav-links .menu-dropdown a.menu-item {
+  color: var(--ink);
+  padding: 10px 12px;
+  border-bottom: none;
+}
+
+.nav-links .menu-dropdown a.menu-item:hover,
+.nav-links .menu-dropdown a.menu-item:focus-visible {
+  background: var(--paper);
+  border-bottom: none;
+}
+
+/* Theme toggle button */
+
+.theme-toggle {
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 999px;
+  padding: 6px 10px;
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.theme-toggle:hover,
+.theme-toggle:focus-visible {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* Overflow menu */
+
+.menu-wrap {
+  position: relative;
+}
+
+.menu-btn {
+  width: 36px;
+  height: 36px;
+  border: 0px solid rgba(255, 255, 255, 0.55);
+  border-radius: 100%;
+  background: transparent;
+  color: #fff;
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.menu-btn:hover,
+.menu-btn:focus-visible,
+.menu-btn[aria-expanded="true"] {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.menu-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 170px;
+  padding: 6px;
+  background: var(--card);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  z-index: 50;
+}
+
+.menu-dropdown[hidden],
+.menu-item[hidden] {
+  display: none;
+}
+
+.menu-item {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.9rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.menu-item:hover,
+.menu-item:focus-visible {
+  background: var(--paper);
+}
+
+#logoutBtn {
+  color: var(--lost);
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   4. Landing page
+   ========================================================================== */
+
+.landing-wrap {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  /*text-align: left;*/
+  padding: 50px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.brand-highlight {
+  font-family: "Eagle Lake", cursive;
+  color: #7FA37A;
+  font-weight: 900;
+}
+
+.landing-wrap h1 {
+  font-size: 4.5rem;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.landing-wrap p {
+  font-size: 1.1rem;
+  max-width: 500px;
+  margin-bottom: 30px;
+  color: var(--ink-soft);
+}
+
+.landing-btn {
+  padding: 12px 28px;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: none;
+  background-color: #2d6cdf;
+  color: white;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.landing-btn:hover {
+  background-color: #1e4fa3;
+}
+
+
+/* ==========================================================================
+   5. Hero
+   ========================================================================== */
+
+.hero {
+  min-height: 60vh;            /* height of the image area; adjust to taste */
+  padding: 60px 20px;
+
+  background-image:
+    linear-gradient(
+      rgba(245, 239, 227, 0.35),
+      rgba(245, 239, 227, 0.65)
+    ),
+    url("Campus-background.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.hero h1 {
+  font-size: 2.5rem;
+  color: #24314b;
+  margin-bottom: 16px;
+}
+
+.hero p {
+  max-width: 720px;
+  font-size: 1.1rem;
+  line-height: 1.7;
+  font-weight: 500;
+  color: #24314b;
+}
+
+/* Dark mode: darker overlay so the image doesn't glare */
+[data-theme="dark"] .hero {
+  background-image:
+    linear-gradient(
+      rgba(32, 37, 43, 0.65),
+      rgba(32, 37, 43, 0.85)
+    ),
+    url("Campus-background.png");
+}
+
+[data-theme="dark"] .hero h1,
+[data-theme="dark"] .hero p {
+  color: #f1f3f4;
+}
+
+/* ==========================================================================
+   6. Dashboard 
+   ========================================================================== */
+
+.dashboard-wrap {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px;
+    }
+    .dashboard-wrap h2 {
+      font-size: 3rem;
+      margin-bottom: 60px;
+    }
+    .dashboard-options {
+      display: flex;
+      gap: 30px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .dashboard-card {
+      width: 400px;
+      padding: 60px 20px;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      text-decoration: none;
+      color: #333;
+      background-color: #f9f9f9;
+      transition: box-shadow 0.2s ease, transform 0.2s ease;
+    }
+    .dashboard-card:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      transform: translateY(-3px);
+    }
+    .dashboard-card h3 {
+      margin-bottom: 8px;
+      color: #2d6cdf;
+      text-align: center;
+
+    }
+    .dashboard-card p {
+      font-size: 0.9rem;
+      color: #666;
+    }
+    /*.logout-btn {
+      margin-top: 24px;
+      padding: 10px 18px;
+      border: 1px solid #2d6cdf;
+      border-radius: 6px;
+      color: #2d6cdf;
+      background: transparent;
+      cursor: pointer;
+    }*/
+
+/* ==========================================================================
+   7. Search / filter strip
+   ========================================================================== */
+
+.board-strip {
+  background: var(--cork);
+  padding: 18px 24px;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  box-shadow: var(--shadow);
+}
+
+.filter-row {
+  max-width: 1080px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.filter-row input[type="text"] {
+  flex: 1;
+  min-width: 200px;
+  padding: 10px 14px;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  background: var(--card);
+  color: var(--ink);
+}
+
+.filter-row input[type="text"]:focus-visible {
+  outline: 3px solid #ffd9a0;
+}
+
+/* Lost / Found / All toggle */
+
+.status-toggle {
+  display: flex;
+  gap: 6px;
+}
+
+.status-toggle button {
+  padding: 9px 16px;
+  border-radius: var(--radius);
+  border: 2px solid transparent;
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--ink);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.status-toggle button.active[data-status="lost"] {
+  background: var(--lost);
+  color: #fff;
+}
+
+.status-toggle button.active[data-status="found"] {
+  background: var(--found);
+  color: #fff;
+}
+
+.status-toggle button.active[data-status="all"] {
+  background: var(--ink);
+  color: #fff;
+}
+
+/* Report button */
+
+.report-btn {
+  padding: 10px 18px;
+  border-radius: var(--radius);
+  background: #ffd9a0;
+  color: var(--cork-dark);
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.report-btn:hover {
+  background: #ffcf88;
+}
+
+
+/* ==========================================================================
+   8. Item grid, note cards, claimed items
+   ========================================================================== */
+
+.board {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.note-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  position: relative;
+  border-top: 6px solid var(--line);
+}
+
+.note-card[data-status="lost"] {
+  border-top-color: var(--lost);
+}
+
+.note-card[data-status="found"] {
+  border-top-color: var(--found);
+}
+
+.note-body {
+  padding: 14px 16px 16px;
+}
+
+.note-tag {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 20px;
+  margin-bottom: 8px;
+}
+
+.note-card[data-status="lost"] .note-tag {
+  background: rgba(193, 68, 43, 0.12);
+  color: var(--lost);
+}
+
+.note-card[data-status="found"] .note-tag {
+  background: rgba(63, 125, 92, 0.12);
+  color: var(--found);
+}
+
+.note-title {
+  font-size: 1.05rem;
+  margin-bottom: 4px;
+}
+
+.note-meta {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  margin: 2px 0;
+}
+
+.note-contact {
+  margin-top: 10px;
+  display: inline-block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--cork-dark);
+  border-bottom: 1px solid var(--cork-dark);
+}
+
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px 16px;
+  color: var(--ink-soft);
+}
+
+/* Claimed items */
+
+.note-card.claimed {
+  opacity: 0.55;
+  filter: grayscale(40%);
+}
+
+.claimed-badge {
+  display: inline-block;
+  background: #2ecc71;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 6px;
+  margin-left: 6px;
+}
+
+[data-theme="dark"] .claimed-badge {
+  background: #27ae60;
+}
+
+
+/* ==========================================================================
+   9. Forms (post.html)
+   ========================================================================== */
+
+.form-wrap {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 40px 24px 64px;
+}
+
+.form-wrap h1 {
+  font-size: 1.8rem;
+  margin-bottom: 6px;
+}
+
+.form-wrap p.sub {
+  color: var(--ink-soft);
+  margin-bottom: 28px;
+}
+
+/* Lost / Found picker */
+
+.status-picker {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.status-picker label {
+  flex: 1;
+  text-align: center;
+  padding: 12px;
+  border-radius: var(--radius);
+  border: 2px solid var(--line);
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.status-picker input {
+  display: none;
+}
+
+.status-picker input:checked + span {
+  color: inherit;
+}
+
+.status-picker label:has(input:checked)[data-status="lost"] {
+  border-color: var(--lost);
+  background: rgba(199, 64, 36, 0.08);
+  color: var(--lost);
+}
+
+.status-picker label:has(input:checked)[data-status="found"] {
+  border-color: var(--found);
+  background: rgba(45, 138, 88, 0.08);
+  color: var(--found);
+}
+
+/* Fields */
+
+.field {
+  margin-bottom: 18px;
+}
+
+.field label {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--ink);
+}
+
+.field input,
+.field textarea,
+.field select {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  font-family: inherit;
+  background: var(--card);
+  color: var(--ink);
+}
+
+.field input:focus-visible,
+.field textarea:focus-visible,
+.field select:focus-visible {
+  outline: 2px solid var(--cork);
+  border-color: var(--cork);
+}
+
+.field textarea {
+  resize: vertical;
+  min-height: 90px;
+}
+
+/* Submit button + note */
+
+.submit-btn {
+  width: 100%;
+  padding: 13px;
+  border-radius: var(--radius);
+  border: none;
+  background: var(--action);
+  color: var(--action-text);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.submit-btn:hover,
+.submit-btn:focus-visible {
+  background: var(--action-hover);
+  box-shadow: 0 0 0 3px rgba(45, 108, 223, 0.25);
+  outline: none;
+}
+
+.form-note {
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  margin-top: 12px;
+  text-align: center;
+}
+
+
+/* ==========================================================================
+   10. Login page
+   (the two original .login-container blocks are merged here; the theme
+   variables win, exactly as they did before)
+   ========================================================================== */
+
+.login-container {
+  max-width: 380px;
+  margin: 80px auto;
+  padding: 30px 25px;
+  background: var(--card);
+  color: var(--ink);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+
+.login-container h2 {
+  margin-bottom: 20px;
+  color: var(--ink);
+}
+
+.login-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.login-container input {
+  padding: 12px;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.login-container input:focus {
+  border-color: #4a90e2;
+}
+
+.login-container button {
+  padding: 12px;
+  background-color: #4a90e2;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.login-container button:hover {
+  background-color: #3a7bc8;
+}
+
+.login-container p {
+  margin-top: 15px;
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.login-container p a {
+  color: #4a90e2;
+  text-decoration: none;
+}
+
+.login-container p a:hover {
+  text-decoration: underline;
+}
+
+#errorMsg {
+  font-size: 13px;
+  margin-top: 5px;
+  min-height: 16px;
+}
+
+
+/* ==========================================================================
+   11. Modals
+   ========================================================================== */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-box {
+  position: relative;
+  background: #fff;
+  color: #1a1a1a;
+  border-radius: 12px;
+  padding: 24px;
+  width: 90%;
+  max-width: 420px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.modal-box h2 {
+  margin-top: 0;
+}
+
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  color: #666;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.modal-close:hover {
+  background: #eee;
+  color: #1a1a1a;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.secondary-btn {
+  background: #eee;
+  color: #1a1a1a;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.secondary-btn:hover {
+  background: #ddd;
+}
+
+/* Modals: dark mode overrides */
+
+[data-theme="dark"] .modal-box {
+  background: #1e1e1e;
+  color: #f2f2f2;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="dark"] .modal-box .field label {
+  color: #d0d0d0;
+}
+
+[data-theme="dark"] .modal-box input {
+  background: #2a2a2a;
+  color: #f2f2f2;
+  border: 1px solid #444;
+}
+
+[data-theme="dark"] .secondary-btn {
+  background: #333;
+  color: #f2f2f2;
+}
+
+[data-theme="dark"] .secondary-btn:hover {
+  background: #444;
+}
+
+[data-theme="dark"] .modal-close {
+  color: #aaa;
+}
+
+[data-theme="dark"] .modal-close:hover {
+  background: #333;
+  color: #fff;
+}
+
+
+/* ==========================================================================
+   12. Footer
+   ========================================================================== */
+
+footer {
+  text-align: center;
+  padding: 20px;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  border-top: 1px solid var(--line);
+}
+
+
+/* ==========================================================================
+   13. Responsive (keep this last so it overrides the rules above)
+   ========================================================================== */
+
+@media (max-width: 560px) {
+  .topbar {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .nav-links {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .hero h1 {
+    font-size: 1.8rem;
+  }
+
+  .filter-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .status-toggle {
+    justify-content: center;
+  }
+}
+.note-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.note-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+.status-toggle button {
+  color: #1f2933;
+  font-weight: 600;
+}
+
+.status-toggle button.active {
+  background: #ffffff;
+  color: #111111;
+}
+
+.status-toggle button {
+  background: rgba(255, 255, 255, 0.85);
+  color: #1f2933;
+  font-weight: 600;
+}
+
+.status-toggle button.active[data-status="all"] {
+  background: #ffffff;
+  color: #111111;
+  border-color: #f5b971;
+}
+
+.status-toggle button.active[data-status="lost"] {
+  background: var(--lost);
+  color: #ffffff;
+}
+
+.status-toggle button.active[data-status="found"] {
+  background: var(--found);
+  color: #ffffff;
+}
+
+.watermark{
+  font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+  position:right-corner;
+}
+
+

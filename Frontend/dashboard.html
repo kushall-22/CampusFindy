@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Campus Findy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/x-icon" href="CampusFindly.ico">
+  <link rel="stylesheet" href="style.css">
+  
+</head>
+<body  class="page-bg">
+
+    <!--<header class="topbar">
+    <a class="brand" href="index.html">
+      <img src="./CampusFindly-removebg-preview1.png" alt="CampusFindy Logo" class="brand-logo">
+      <span>ampusFindy</span>
+    </a>-->
+
+      <header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="brand-logo" aria-hidden="true"></span>
+    <span>ampusFindy</span>
+  </a>
+
+    <nav class="nav-links" aria-label="Main navigation">
+  <div class="menu-wrap">
+    <button type="button" class="menu-btn" id="menuBtn"
+            aria-label="More options" aria-haspopup="true" aria-expanded="false">⋮</button>
+
+    <div class="menu-dropdown" id="menuDropdown" hidden>
+      <a class="menu-item" href="index.html">Home</a>
+      <a class="menu-item" href="dashboard.html">Dashboard</a>
+      <button type="button" class="menu-item" id="themeToggle">☾ Dark</button>
+      <button type="button" class="menu-item" id="logoutBtn">Logout</button>
+    </div>
+  </div>
+</nav>  
+   <!-- <nav class="nav-links" aria-label="Main navigation">
+      <a href="index.html">Home</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="post.html">Report an item</a>
+      <button type="button" class="theme-toggle" id="themeToggle">☾ Dark</button>
+    </nav>-->
+    </header>
+  
+    <div class="dashboard-wrap">
+    <h2>What would you like to do?</h2>
+    <div class="dashboard-options">
+      <a href="post.html" class="dashboard-card">
+        <h3>Post an Item</h3>
+        <p>Report something you lost or found on campus.</p>
+      </a>
+      <a href="board.html" class="dashboard-card">
+        <h3>Claim / Search</h3>
+        <p>Browse the board to find or claim an item.</p>
+      </a>
+    </div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      window.location.replace("login.html");
+    }
+
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      localStorage.removeItem("token");
+      localStorage.removeItem("userName");
+      localStorage.removeItem("userEmail");
+      window.location.replace("login.html");
+    });
+  </script>
+  <script src="theme.js"></script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Login - Campus Findy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+<link rel="icon" type="image/x-icon" href="CampusFindly.ico">
+</head>
+
+<body class="page-bg">
+
+  <!--<header class="topbar">
+    <a class="brand" href="index.html">
+      <img src="./CampusFindly-removebg-preview1.png" alt="CampusFindy Logo" class="brand-logo">
+      <span>ampusFindy</span>
+    </a>-->
+
+      <header class="topbar">
+      <a class="brand" href="index.html">
+    <span class="brand-logo" aria-hidden="true"></span>
+    <span>ampusFindy</span>
+      </a>
+
+    <nav class="nav-links" aria-label="Main navigation">
+      <a href="index.html">Home</a>
+      <a href="dashboard.html">Dashboard</a>
+      <button type="button" class="theme-toggle" id="themeToggle">☾ Dark</button>
+    </nav>
+  </header>
+
+  <div class="login-container">
+    <h2>Student Login</h2>
+
+    <form id="loginForm">
+      <input type="email" id="email" placeholder="College Email" required />
+      <input type="password" id="password" placeholder="Password" required />
+      <button type="submit">Login</button>
+    </form>
+
+    <p>New here? <a href="signup.html">Create an account</a></p>
+    <p id="errorMsg" style="color:red;"></p>
+  </div>
+
+  <script>
+    const loginForm = document.getElementById("loginForm");
+    const errorMsg = document.getElementById("errorMsg");
+
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      try {
+        const response = await fetch("http://localhost:5000/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          errorMsg.textContent = data.message || "Login failed";
+          return;
+        }
+
+        // Save token and user info for later use
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("userName", data.name);
+        localStorage.setItem("userEmail", data.email);
+
+        window.location.href = "dashboard.html";
+      } catch (error) {
+        errorMsg.textContent = "Could not reach server. Is it running on port 5000?";
+      }
+    });
+  </script>
+  <script src="theme.js"></script>
+
+</body>
+</html>

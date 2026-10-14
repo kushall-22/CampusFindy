@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Report an Item — CampusFindy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" type="image/x-icon" href="CampusFindly.ico">
+  <link rel="stylesheet" href="style.css">
+  <body class="page-bg">
+  </body>
+</head>
+<body>
+
+  <!--<header class="topbar">
+    <a class="brand" href="index.html">
+      <img src="./CampusFindly-removebg-preview.png" alt="CampusFindy Logo" class="brand-logo">
+      <span>ampusFindy</span>
+    </a>-->
+
+      <header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="brand-logo" aria-hidden="true"></span>
+    <span>ampusFindy</span>
+  </a>
+
+    <nav class="nav-links" aria-label="Main navigation">
+  <div class="menu-wrap">
+    <button type="button" class="menu-btn" id="menuBtn"
+            aria-label="More options" aria-haspopup="true" aria-expanded="false">⋮</button>
+
+    <div class="menu-dropdown" id="menuDropdown" hidden>
+      <a class="menu-item" href="index.html">Home</a>
+      <a class="menu-item" href="dashboard.html">Dashboard</a>
+      <button type="button" class="menu-item" id="themeToggle">☾ Dark</button>
+      <button type="button" class="menu-item" id="logoutBtn">Logout</button>
+    </div>
+  </div>
+</nav>  
+   <!-- <nav class="nav-links" aria-label="Main navigation">
+      <a href="index.html">Home</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="post.html">Report an item</a>
+      <button type="button" class="theme-toggle" id="themeToggle">☾ Dark</button>
+    </nav>-->
+  </header>
+
+  <div class="form-wrap">
+    <h1>Report an item</h1>
+    <p class="sub">Fill in as much detail as you can — it makes matching lost and found items much easier.</p>
+
+    <form id="itemForm">
+      <div class="status-picker">
+        <label data-status="lost">
+          <input type="radio" name="status" value="lost" checked />
+          <span>I lost something</span>
+        </label>
+        <label data-status="found">
+          <input type="radio" name="status" value="found" />
+          <span>I found something</span>
+        </label>
+      </div>
+
+      <div class="field">
+        <label for="title">Item name</label>
+        <input type="text" id="title" placeholder="e.g. Blue water bottle" required />
+      </div>
+
+      <div class="field">
+        <label for="category">Category</label>
+        <select id="category">
+          <option value="electronics">Electronics</option>
+          <option value="bag">Bag / backpack</option>
+          <option value="id-card">ID card / documents</option>
+          <option value="clothing">Clothing / accessories</option>
+          <option value="books">Books / stationery</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="description">Description</label>
+        <textarea id="description" placeholder="Color, brand, any identifying marks..." required></textarea>
+      </div>
+
+      <div class="field">
+        <label for="location">Location</label>
+        <input type="text" id="location" placeholder="e.g. Library, 2nd floor" required />
+      </div>
+
+      <div class="field">
+        <label for="date">Date</label>
+        <input type="date" id="date" required />
+      </div>
+
+      <div class="field">
+        <label for="contactInfo">Your contact info</label>
+        <input type="text" id="contactInfo" placeholder="Email or phone number" required />
+      </div>
+
+      <button type="submit" class="submit-btn">Post to CampusFindy</button>
+    </form>
+  </div>
+
+  <footer>
+  <mark>CampusFindy — built by students, for students.</mark>
+  </footer>
+
+<div id="verifyModal" class="modal-overlay" style="display: none;">
+  <div class="modal-box">
+    <h2>Add a verification question</h2>
+    <p class="sub">Since you found this item, add a question only the real owner would know the answer to. This helps prevent false claims.</p>
+
+    <div class="field">
+      <label for="verifyQuestion">Question</label>
+      <input type="text" id="verifyQuestion" placeholder="e.g. What color is the strap?" />
+    </div>
+
+    <div class="field">
+      <label for="verifyAnswer">Answer</label>
+      <input type="text" id="verifyAnswer" placeholder="e.g. Red" />
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" id="verifyCancelBtn" class="secondary-btn">Cancel</button>
+      <button type="button" id="verifyConfirmBtn" class="submit-btn">Confirm & Post</button>
+    </div>
+  </div>
+</div>
+
+  <script type="module" src="script.js"></script>
+  <script src="theme.js"></script>
+</body>
+</html>
