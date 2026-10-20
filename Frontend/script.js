@@ -56,7 +56,7 @@ async function showClaimedContact(item) {
 
   try {
     const response = await fetch(
-      `http://localhost:5000/api/items/${item._id}/contact`,
+      `http://https://campusfindy.onrender.com/api/items/${item._id}/contact`,
       { headers: { "Authorization": `Bearer ${token}` } }
     );
 
@@ -223,7 +223,7 @@ if (claimSubmitBtn) {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/items/${activeClaimItem._id}/claim`,
+        `http://https://campusfindy.onrender.com/api/items/${activeClaimItem._id}/claim`,
         {
           method: "PATCH",
           headers: {
@@ -299,7 +299,7 @@ async function submitItem(newItem, submitBtn) {
     }
 
     const response = await fetch(
-      "http://localhost:5000/api/items",
+      "http://https://campusfindy.onrender.com/api/items",
       {
         method: "POST",
         headers: {
@@ -428,7 +428,7 @@ async function loadItems() {
   if (!board) return;
 
   try {
-    const response = await fetch("http://localhost:5000/api/items");
+    const response = await fetch("http://https://campusfindy.onrender.com/api/items");
     const data = await response.json();
 
     allItems = Array.isArray(data) ? data : data.items || [];
