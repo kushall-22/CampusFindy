@@ -1073,9 +1073,13 @@ footer {
   color: #ffffff;
 }
 
-.watermark{
+  .watermark {
   font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
-  position:right-corner;
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  opacity: 0.5;          /* make it subtle */
+  pointer-events: none;  /* clicks pass through it */
+  z-index: 1000;         /* keep it above other content */
 }
-
 
