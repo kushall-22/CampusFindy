@@ -7,12 +7,12 @@ const router = express.Router();
 // Post a new item (lost or found) — protected route
 router.post('/', authMiddleware, async (req, res) => {
   try {
-    const { title, description, status, location, contactInfo, verificationQuestion, verificationAnswer } = req.body;
-
+    const { title, description, status, category, location, contactInfo, verificationQuestion, verificationAnswer } = req.body;
     const newItem = new Item({
       title,
       description,
       status,
+      category,
       location,
       contactInfo,
       postedBy: req.userId,
