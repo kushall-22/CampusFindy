@@ -56,7 +56,7 @@ async function showClaimedContact(item) {
 
   try {
     const response = await fetch(
-      `http://192.168.1.5:5000/api/items/${item._id}/contact`,
+      `http://localhost:5000/api/items/${item._id}/contact`,
       { headers: { "Authorization": `Bearer ${token}` } }
     );
 
@@ -106,11 +106,27 @@ function renderBoard(items) {
   });
 }
 
-function applyFilters() {
+/*function applyFilters() {
+  const board = document.getElementById("board");
+  const query = currentQuery.trim().toLowerCase();
+
+  // Nothing typed yet: show a hint instead of all items
+  if (!query) {
+    if (board) {
+      board.innerHTML = `
+        <div class="empty-state">
+          Type a keyword above to search for found items.
+        </div>
+      `;
+    }
+    return;
+  }
+
+  const words = query.split(/\s+/);
+
   const filtered = allItems.filter((item) => {
-    const matchesStatus =
-      currentStatus === "all" ||
-      item.status === currentStatus;
+    // Only found items are ever shown
+    if (item.status !== "found") return false;
 
     const haystack = `
       ${item.title}
@@ -118,10 +134,46 @@ function applyFilters() {
       ${item.description}
     `.toLowerCase();
 
-    const matchesQuery =
-      haystack.includes(currentQuery.toLowerCase());
+    // Every typed word must match
+    return words.every((w) => haystack.includes(w));
+  });
 
-    return matchesStatus && matchesQuery;
+  renderBoard(filtered);
+}*/
+
+// How did the visitor arrive at the board?
+const params = new URLSearchParams(window.location.search);
+const boardMode = params.get("mode"); // "lost", "found", or nothing
+const boardWords = (params.get("q") || "")
+  .toLowerCase()
+  .split(/\s+/)
+  .filter((w) => w.length > 2);
+
+function applyFilters() {
+  const typed = currentQuery.trim().toLowerCase();
+  const typedWords = typed ? typed.split(/\s+/) : [];
+
+  // Reported found -> show lost items. Otherwise -> show found items.
+  const filtered = allItems.filter((item) => {
+    if (!boardMode) {
+      // Direct visit: only claimed items
+      if (!item.claimed) return false;
+    } else {
+      // After reporting: lost -> show found items, found -> show lost items
+      const wantedStatus = boardMode === "found" ? "lost" : "found";
+      if (item.status !== wantedStatus) return false;
+    }
+
+    const haystack =
+      `${item.title} ${item.location} ${item.description}`.toLowerCase();
+
+    // Similar to the item they just reported
+    if (boardWords.length > 0 && !boardWords.some((w) => haystack.includes(w))) {
+      return false;
+    }
+
+    // Whatever they type in the search bar
+    return typedWords.every((w) => haystack.includes(w));
   });
 
   renderBoard(filtered);
@@ -168,6 +220,11 @@ let activeClaimItem = null;
 function openClaimModal(item) {
   if (item.claimed) {
     alert("This item has already been claimed.");
+    return;
+  }
+  if (!localStorage.getItem("token")) {
+    alert("Please log in to claim an item.");
+    window.location.href = "login.html";
     return;
   }
 
@@ -223,7 +280,7 @@ if (claimSubmitBtn) {
 
     try {
       const response = await fetch(
-        `http://192.168.1.5:5000/api/items/${activeClaimItem._id}/claim`,
+        `http://localhost:5000/api/items/${activeClaimItem._id}/claim`,
         {
           method: "PATCH",
           headers: {
@@ -280,6 +337,10 @@ if (claimSubmitBtn) {
 // ---------- Report / Post form ----------
 
 const itemForm = document.getElementById("itemForm");
+if (itemForm && !localStorage.getItem("token")) {
+  alert("Please log in to report an item.");
+  window.location.href = "login.html";
+}
 const verifyModal = document.getElementById("verifyModal");
 const verifyCancelBtn = document.getElementById("verifyCancelBtn");
 const verifyConfirmBtn = document.getElementById("verifyConfirmBtn");
@@ -299,7 +360,7 @@ async function submitItem(newItem, submitBtn) {
     }
 
     const response = await fetch(
-      "http://192.168.1.5:5000/api/items",
+      "http://localhost:5000/api/items",
       {
         method: "POST",
         headers: {
@@ -329,11 +390,10 @@ async function submitItem(newItem, submitBtn) {
 
     console.log("Item posted successfully:", data);
 
-    alert(
-      "Posted successfully! Redirecting you to the Dashboard..."
-    );
+    alert("Posted successfully! Showing similar items...");
 
-    window.location.href = "dashboard.html";
+    window.location.href =
+      `board.html?mode=${newItem.status}&q=${encodeURIComponent(newItem.title)}`;
 
   } catch (err) {
     console.error("Failed to submit item:", err);
@@ -428,7 +488,7 @@ async function loadItems() {
   if (!board) return;
 
   try {
-    const response = await fetch("http://192.168.1.5:5000/api/items");
+    const response = await fetch("http://localhost:5000/api/items");
     const data = await response.json();
 
     allItems = Array.isArray(data) ? data : data.items || [];

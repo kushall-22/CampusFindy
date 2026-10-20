@@ -55,11 +55,13 @@
   <div class="board-strip">
     <div class="filter-row">
       <input type="text" id="searchInput" placeholder="Search by item name or location..." />
-      <div class="status-toggle">
+      
+      <!-- <div class="status-toggle">
         <button data-status="all" class="active">All</button>
         <button data-status="lost">Lost</button>
         <button data-status="found">Found</button>
-      </div>
+      </div> -->
+
       <a href="post.html"><button class="report-btn">+ Report item</button></a>
     </div>
   </div>
@@ -95,5 +97,12 @@
 
   <script type="module" src="script.js"></script>
   <script src="theme.js"></script>
+
+  <script>
+  if (!localStorage.getItem("token")) {
+    window.location.replace("login.html");
+  }
+</script>
+
 </body>
 </html>
