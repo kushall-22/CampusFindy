@@ -4,14 +4,22 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const authRoutes = require('./routes/authRoutes');
 const itemRoutes = require('./routes/itemRoutes');
+const claimRoutes = require('./routes/claimRoutes');
+const myItemsRoutes = require('./routes/myItemsRoutes');
 
+const authMiddleware = require('./middleware/authMiddleware');
+const requireAdmin = require('./middleware/requireAdmin');
+const adminRoutes = require('./routes/adminRoutes');
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use('/api/admin', authMiddleware, requireAdmin, adminRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/items', itemRoutes);
+app.use('/api/claims', claimRoutes);
+app.use('/api/my-items', myItemsRoutes);
 
 // Test route
 app.get('/', (req, res) => {

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" >
   <title>CampusFindy — Lost & Found</title>
   <link rel="preconnect" href="http://fonts.googleapis.com" />
   <link href="http://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -25,6 +25,7 @@
   </a>
 
   <nav class="nav-links" aria-label="Main navigation">
+    <button type="button" class="theme-toggle" id="themeToggle">☾ Dark</button>
   <div class="menu-wrap">
     <button type="button" class="menu-btn" id="menuBtn"
             aria-label="More options" aria-haspopup="true" aria-expanded="false">⋮</button>
@@ -32,7 +33,6 @@
     <div class="menu-dropdown" id="menuDropdown" hidden>
       <a class="menu-item" href="index.html">Home</a>
       <a class="menu-item" href="dashboard.html">Dashboard</a>
-      <button type="button" class="menu-item" id="themeToggle">☾ Dark</button>
       <button type="button" class="menu-item" id="logoutBtn">Logout</button>
     </div>
   </div>
@@ -103,6 +103,37 @@
     window.location.replace("login.html");
   }
 </script>
+
+<div id="requestModal" class="request-modal" style="display:none;">
+  <div class="request-box">
+    <h3>Request this item</h3>
+    <p class="dlg-desc">Describe the item so the finder can verify it's yours.</p>
+    <input type="hidden" id="requestItemId">
+
+    <label class="dlg-label" for="requestProof">Your description</label>
+    <textarea id="requestProof" rows="4" placeholder="e.g. black wallet with a blue ID card inside"></textarea>
+
+    <p id="requestMsg"></p>
+
+    <div class="dlg-actions">
+      <button type="button" id="requestCancelBtn" class="dlg-cancel">Cancel</button>
+      <button type="button" id="requestSendBtn" class="dlg-primary">Send Request</button>
+    </div>
+  </div>
+</div>
+
+<div id="infoPopup" class="popup-overlay" hidden>
+  <div class="popup-window" role="dialog" aria-modal="true" aria-labelledby="popupTitle">
+    <button type="button" class="popup-x" id="popupClose" aria-label="Close">×</button>
+    <div class="popup-icon" id="popupIcon"></div>
+    <h3 id="popupTitle"></h3>
+    <p id="popupText"></p>
+    <div class="popup-actions">
+      <button type="button" class="popup-btn ghost" id="popupCopy" hidden>Copy</button>
+      <button type="button" class="popup-btn" id="popupOk">OK</button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>

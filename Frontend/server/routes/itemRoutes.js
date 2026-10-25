@@ -31,7 +31,7 @@ router.post('/', authMiddleware, async (req, res) => {
 // Browse all items — public route
 router.get('/', async (req, res) => {
   try {
-    const items = await Item.find().sort({ createdAt: -1 });
+    const items = await Item.find().select('-contactInfo -verificationAnswer').sort({ createdAt: -1 });
     res.status(200).json(items);
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
@@ -71,22 +71,28 @@ router.patch('/:id/claim', authMiddleware, async (req, res) => {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 });
-// Get contact info of an item you claimed — protected route
+
+// GET /api/items/:id/contact  -> only the person who claimed the item
 router.get('/:id/contact', authMiddleware, async (req, res) => {
   try {
-    const item = await Item.findById(req.params.id).select('+contactInfo');
-
+    const item = await Item.findById(req.params.id);
     if (!item) {
-      return res.status(404).json({ message: 'Item not found' });
+      return res.status(404).json({ message: 'Item not found.' });
     }
 
-    if (!item.claimed || String(item.claimedBy) !== String(req.userId)) {
-      return res.status(403).json({ message: 'Not allowed' });
+    if (!item.claimed || !item.claimedBy) {
+      return res.status(403).json({ message: 'This item has not been claimed yet.' });
     }
 
-    res.status(200).json({ contactInfo: item.contactInfo });
+    if (String(item.claimedBy) !== String(req.userId)) {
+      return res.status(403).json({
+        message: 'Only the person who claimed this item can see the contact details.'
+      });
+    }
+
+    res.json({ contactInfo: item.contactInfo });
   } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
+    res.status(500).json({ message: err.message });
   }
 });
 

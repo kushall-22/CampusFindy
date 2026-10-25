@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Dashboard - Campus Findy</title>
   <link rel="preconnect" href="http://fonts.googleapis.com">
   <link href="http://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -25,17 +25,16 @@
     <span>ampusFindy</span>
   </a>
       
-  
-  
+
     <nav class="nav-links" aria-label="Main navigation">
+      <button type="button" class="theme-toggle" id="themeToggle">☾ Dark</button>
   <div class="menu-wrap">
     <button type="button" class="menu-btn" id="menuBtn"
             aria-label="More options" aria-haspopup="true" aria-expanded="false">⋮</button>
 
-    <div class="menu-dropdown" id="menuDropdown" hidden>
+            <div class="menu-dropdown" id="menuDropdown" hidden>
       <a class="menu-item" href="index.html">Home</a>
       <a class="menu-item" href="dashboard.html">Dashboard</a>
-      <button type="button" class="menu-item" id="themeToggle">☾ Dark</button>
       <button type="button" class="menu-item" id="logoutBtn">Logout</button>
     </div>
   </div>
@@ -48,9 +47,15 @@
     </nav>-->
     </header>
   
-    <div class="dashboard-wrap">
+    <!-- <div class="dashboard-wrap">
     <h2>What would you like to do?</h2>
+
     <div class="dashboard-options">
+      <a href="myposts.html" class="dashboard-card">
+  <h3>My Posts</h3>
+  <p>See the lost and found items you posted.</p>
+</a>
+
       <a href="post.html" class="dashboard-card">
         <h3>Post an Item</h3>
         <p>Report something you lost or found on campus.</p>
@@ -59,8 +64,57 @@
         <h3>Claim / Search</h3>
         <p>Browse the board to find or claim an item.</p>
       </a>
+      <a href="requests.html" class="dashboard-card">
+  <h3>Requests on my items</h3>
+  <p>Approve or reject claim requests and track returns.</p>
+</a>
     </div>
+  </div> -->
+
+  <div class="dashboard-wrap">
+  <h2>What would you like to do?</h2>
+  <p class="dash-sub">Choose an action to get started.</p>
+
+  <div class="dashboard-options">
+
+    <a href="myposts.html" class="dashboard-card dash-row c-blue">
+      <span class="dash-icon">📄</span>
+      <span class="dash-text">
+        <h3>My Posts</h3>
+        <p>See the lost and found items you posted.</p>
+      </span>
+      <span class="dash-arrow">→</span>
+    </a>
+
+    <a href="post.html" class="dashboard-card dash-row c-green">
+      <span class="dash-icon">➕</span>
+      <span class="dash-text">
+        <h3>Report an Item</h3>
+        <p>Report something you lost or found on campus.</p>
+      </span>
+      <span class="dash-arrow">→</span>
+    </a>
+
+    <a href="board.html" class="dashboard-card dash-row c-purple">
+      <span class="dash-icon">✅</span>
+      <span class="dash-text">
+        <h3>Claimed Items</h3>
+        <p>See items that have already been claimed.</p>
+      </span>
+      <span class="dash-arrow">→</span>
+    </a>
+
+    <a href="requests.html" class="dashboard-card dash-row c-amber">
+      <span class="dash-icon">🔔</span>
+      <span class="dash-text">
+        <h3>Requests on found items</h3>
+        <p>Approve or reject claim requests and track returns.</p>
+      </span>
+      <span class="dash-arrow">→</span>
+    </a>
+
   </div>
+</div>
 
   <script>
    /* const token = localStorage.getItem("token");
@@ -86,7 +140,7 @@
 });
   </script>
   <script src="theme.js"></script>
-
+  <script src="script.js"></script>
   </script>
 
   <footer><mark>CampusFindy — built by students, for students.</mark>
@@ -94,6 +148,6 @@
       <i>kushall</i>
     </div>
   </footer>
-  
+
 </body>
 </html>

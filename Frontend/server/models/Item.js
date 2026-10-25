@@ -37,6 +37,11 @@ const itemSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  state: {
+    type: String, 
+    enum: ['open', 'closed', 'removed'], 
+    default: 'open' 
+  },
   claimedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'

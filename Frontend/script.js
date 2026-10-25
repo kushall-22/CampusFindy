@@ -38,10 +38,10 @@ function createCard(item) {
     card.classList.add("claimed");
     card.style.cursor = "pointer";
     card.addEventListener("click", () => showClaimedContact(item));
-  } else if (item.status === "found") {
-    card.style.cursor = "pointer";
-    card.addEventListener("click", () => openClaimModal(item));
-  }
+} else if (item.status === "found") {
+  card.style.cursor = "pointer";
+  card.addEventListener("click", () => openRequestModal(item._id));
+}
 
   return card;
 }
@@ -50,7 +50,11 @@ async function showClaimedContact(item) {
   const token = localStorage.getItem("token");
 
   if (!token) {
-    alert("Please log in to see contact info.");
+    showPopup({
+      title: "Login required",
+      text: "Please log in to see contact info.",
+      kind: "info"
+    });
     return;
   }
 
@@ -63,13 +67,26 @@ async function showClaimedContact(item) {
     const data = await response.json().catch(() => ({}));
 
     if (!response.ok) {
-      alert("This item has already been claimed.");
+      showPopup({
+        title: "Not allowed to view contact info, its confidential",
+        text: data.message || "You can't see the contact details for this item.",
+        kind: "error"
+      });
       return;
     }
 
-    alert("Contact info: " + data.contactInfo);
+    showPopup({
+      title: "Contact details",
+      text: data.contactInfo,
+      kind: "success",
+      copyText: data.contactInfo
+    });
   } catch (err) {
-    alert("Could not connect to the backend.");
+    showPopup({
+      title: "Connection problem",
+      text: "Could not connect to the backend. Make sure the server is running.",
+      kind: "error"
+    });
   }
 }
 
@@ -513,5 +530,113 @@ if (logoutBtn) {
     localStorage.removeItem("userName");
     localStorage.removeItem("userEmail");
     window.location.replace("login.html");
+  });
+}
+
+function openRequestModal(itemId) {
+  document.getElementById('requestItemId').value = itemId;
+  document.getElementById('requestProof').value = '';
+  document.getElementById('requestMsg').textContent = '';
+  document.getElementById('requestModal').style.display = 'flex';
+}
+
+function closeRequestModal() {
+  document.getElementById('requestModal').style.display = 'none';
+}
+
+async function submitRequest() {
+  const itemId = document.getElementById('requestItemId').value;
+  const proof = document.getElementById('requestProof').value;
+  const msg = document.getElementById('requestMsg');
+
+  try {
+    const res = await fetch(`http://localhost:5000/api/claims/${itemId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + localStorage.getItem('token')
+      },
+      body: JSON.stringify({ proof })
+    });
+    const data = await res.json();
+
+    if (res.ok) {
+      msg.textContent = 'Request sent! The finder will review it.';
+      setTimeout(closeRequestModal, 1500);
+    } else {
+      msg.textContent = data.message;
+    }
+  } catch (err) {
+    msg.textContent = 'Could not reach the server.';
+  }
+}
+
+const requestSendBtn = document.getElementById('requestSendBtn');
+const requestCancelBtn = document.getElementById('requestCancelBtn');
+
+if (requestSendBtn) requestSendBtn.addEventListener('click', submitRequest);
+if (requestCancelBtn) requestCancelBtn.addEventListener('click', closeRequestModal);
+
+// ---------- Popup window ----------
+
+const infoPopup = document.getElementById("infoPopup");
+const popupWindow = infoPopup ? infoPopup.querySelector(".popup-window") : null;
+const popupIcon = document.getElementById("popupIcon");
+const popupTitle = document.getElementById("popupTitle");
+const popupText = document.getElementById("popupText");
+const popupCopy = document.getElementById("popupCopy");
+const popupOk = document.getElementById("popupOk");
+const popupClose = document.getElementById("popupClose");
+
+function showPopup({ title, text, kind = "info", copyText = "" }) {
+  if (!infoPopup) {
+    alert(text);
+    return;
+  }
+
+  const icons = { info: "ℹ", success: "✔", error: "!" };
+
+  popupWindow.className = "popup-window " + kind;
+  popupIcon.textContent = icons[kind] || icons.info;
+  popupTitle.textContent = title;
+  popupText.textContent = text;
+
+  popupCopy.textContent = "Copy";
+  popupCopy.hidden = !copyText;
+  popupCopy.onclick = () => {
+    navigator.clipboard.writeText(copyText).then(() => {
+      popupCopy.textContent = "Copied!";
+    });
+  };
+
+  infoPopup.hidden = false;
+}
+
+function hidePopup() {
+  if (infoPopup) infoPopup.hidden = true;
+}
+
+if (popupOk) popupOk.addEventListener("click", hidePopup);
+if (popupClose) popupClose.addEventListener("click", hidePopup);
+
+if (infoPopup) {
+  infoPopup.addEventListener("click", (e) => {
+    if (e.target === infoPopup) hidePopup();
+  });
+}
+
+// Esc closes whichever popup is open
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "Escape") return;
+  hidePopup();
+  const rm = document.getElementById("requestModal");
+  if (rm && rm.style.display !== "none") closeRequestModal();
+});
+
+// Clicking the dark area outside the request popup closes it too
+const requestOverlay = document.getElementById("requestModal");
+if (requestOverlay) {
+  requestOverlay.addEventListener("click", (e) => {
+    if (e.target === requestOverlay) closeRequestModal();
   });
 }
