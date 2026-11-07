@@ -3,61 +3,123 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Campus Findy</title>
-  <link rel="preconnect" href="http://fonts.googleapis.com">
-    <link href="http://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <meta name="description" content="CampusFindy helps students report, search for, and return lost and found items around campus.">
+  <title>CampusFindy — Because lost shouldn't mean gone</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="icon" type="image/x-icon" href="CampusFindly.ico">
   <link rel="stylesheet" href="style.css">
-  <body class="page-bg">
-  </body>
 </head>
-<body>
-  
- <!--<header class="topbar">
-  <a class="brand" href="index.html">
-    <img src="./CampusFindly-removebg-preview1.png" alt="CampusFindy Logo" class="brand-logo">
-    <span>ampusFindy</span>
-  </a>-->
+<body class="landing-page">
 
   <header class="topbar">
-  <a class="brand" href="index.html">
-    <span class="brand-logo" aria-hidden="true"></span>
-    <span>ampusFindy</span>
-  </a>
+    <a class="brand" href="index.html">
+      <span class="brand-logo" aria-hidden="true"></span>
+      <span>ampusFindy</span>
+    </a>
+    <button type="button" class="btn btn-nav theme-toggle" id="themeToggle">☾ Dark</button>
+    <a class="btn btn-nav login" href="login.html">Log In</a>
+    <a class="btn btn-nav signup" href="signup.html">Register</a>
+  </header>
 
- <!--<nav class="nav-links" aria-label="Main navigation">
-  <div class="menu-wrap">
-    <button type="button" class="menu-btn" id="menuBtn"
-            aria-label="More options" aria-haspopup="true" aria-expanded="false">⋮</button>
-
-    <div class="menu-dropdown" id="menuDropdown" hidden>
-      <button type="button" class="menu-item" id="themeToggle">☾ Dark</button>
-    </div>
-  </div>
-</nav>  -->
-  <!--<nav class="nav-links" aria-label="Main navigation">-->
-    <!--<a href="index.html">Home</a>
-    <a href="dashboard.html">Dashboard</a>-->
-    <button type="button" class="theme-toggle" id="themeToggle">☾ Dark</button>
- <!-- </nav>-->
-</header>
-
+  <!-- Hero -->
   <div class="landing-wrap">
-    <!--<img src="./Findydarkversion1.png" alt="CampusFindy Logo" class="logo-dark">
-    <img src="./Findylightversion1.png" alt="CampusFindy Logo" class="logo-light">
-    <h1>Campus Findy</h1> -->
-    <h2>Welcome to </h2><h1><span class="brand-highlight">CampusFindy</span>,</h1>
-    <h2>Because lost shouldn't mean gone.</h2>
-    <p class="tagline">Every item posted here goes straight back to the right person — browse what's been lost or found around campus, or report your own.</p>
-    <a href="dashboard.html" class="landing-btn">Get Started</a>
-  </div>
-  <script src="theme.js"></script>
-
-  <footer><mark>CampusFindy — built by students, for students.</mark>
-    <div class="watermark">
-      <i>kushall</i>
+    <div class="landing-content">
+      <h2>Welcome to </h2><h1><span class="brand-highlight">CampusFindy</span>,</h1>
+      <h2>Because lost shouldn't mean gone.</h2>
+      <p>Every item posted here goes straight back to the right person — browse what's been lost or found around campus, or report your own.</p>
+      <div class="landing-actions">
+        <a href="signup.html" class="btn btn-primary landing-btn">Get Started</a>
+        <a href="#how-it-works" class="btn btn-outline landing-btn landing-btn-ghost">How it works ↓</a>
+      </div>
     </div>
+  </div>
+
+  <!-- How it works -->
+  <section class="landing-section" id="how-it-works" aria-labelledby="how-title">
+    <p class="section-kicker">A few simple steps</p>
+    <h2 class="section-title" id="how-title">Lost. Found. Reconnected.</h2>
+    <p class="section-sub">One place on campus to report missing belongings, discover found items, and manage return requests.</p>
+
+    <div class="board">
+      <article class="note-card" data-status="lost">
+        <div class="note-body">
+          <span class="note-tag">Step 1</span>
+          <h3 class="note-title">Report</h3>
+          <p class="note-meta">Post an item with its name, category, description, location and date.</p>
+          <p class="note-meta">📍 The more detail, the easier it is to recognise.</p>
+        </div>
+      </article>
+
+      <article class="note-card">
+        <div class="note-body">
+          <span class="note-tag">Step 2</span>
+          <h3 class="note-title">Search</h3>
+          <p class="note-meta">Browse the board and search by item name or location.</p>
+          <p class="note-meta">🔎 Found items matching your lost post show up first.</p>
+        </div>
+      </article>
+
+      <article class="note-card" data-status="found">
+        <div class="note-body">
+          <span class="note-tag">Step 3</span>
+          <h3 class="note-title">Reconnect</h3>
+          <p class="note-meta">Send a claim request to contact the finder.</p>
+          <p class="note-meta">🤝 The finder's contact details appear after your request is sent.</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- Why CampusFindy -->
+  <section class="landing-section" id="why-campusfindy" aria-labelledby="why-title">
+    <p class="section-kicker">Why CampusFindy</p>
+    <h2 class="section-title" id="why-title">Safe for owners. Fair for finders.</h2>
+    <p class="section-sub">Every item is protected, so only the real owner gets it back.</p>
+
+    <div class="dashboard-options">
+      <article class="dashboard-card dash-static c-green">
+        <div class="dash-icon">🔒</div>
+        <div class="dash-text">
+          <h3>Verified claims</h3>
+          <p>Finders share their contact details after you send a claim request.</p>
+        </div>
+      </article>
+
+      <article class="dashboard-card dash-static c-blue">
+        <div class="dash-icon">📍</div>
+        <div class="dash-text">
+          <h3>Built for campus</h3>
+          <p>Every post is tied to a place on campus, so matches are easy to spot.</p>
+        </div>
+      </article>
+
+      <article class="dashboard-card dash-static c-amber">
+        <div class="dash-icon">📋</div>
+        <div class="dash-text">
+          <h3>Tracked returns</h3>
+          <p>Finders review each request and follow the item until it is handed back.</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- Final call to action -->
+  <section class="landing-cta" aria-labelledby="cta-title">
+    <h2 id="cta-title">Make the next lost item a found one.</h2>
+    <p>Join your campus community and help useful belongings find their way back.</p>
+    <div class="landing-actions">
+      <a href="signup.html" class="btn btn-primary landing-btn">Get Started</a>
+      <a href="login.html" class="btn btn-outline landing-btn landing-btn-ghost">Log in</a>
+    </div>
+  </section>
+
+  <footer>
+    <mark>CampusFindy — built by students, for students.</mark>
+    <div class="watermark"><i>kushall</i></div>
   </footer>
 
+  <script src="theme.js"></script>
 </body>
 </html>

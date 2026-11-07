@@ -1,13 +1,20 @@
-const API = "http://localhost:5000/api/claims";
+// ==========================================================================
+// CampusFindy — requests.js  (requests.html)
+// Claim requests on the user's found items: approve, reject, mark returned.
+// ==========================================================================
+
 const token = localStorage.getItem("token");
 
 if (!token) window.location.replace("login.html");
 
 const list = document.getElementById("requestList");
 
+let claimsList = [];
+let currentIndex = 0;
+
 async function loadRequests() {
   try {
-    const res = await fetch(`${API}/received`, {
+    const res = await fetch(`${window.CAMPUSFINDY_API_BASE}/claims/received`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     const claims = await res.json();
@@ -16,21 +23,22 @@ async function loadRequests() {
       list.textContent = claims.message || "Could not load requests.";
       return;
     }
-    render(claims);
+
+    claimsList = claims;
+    currentIndex = Math.min(currentIndex, Math.max(0, claimsList.length - 1));
+    showCurrent();
   } catch (err) {
     list.textContent = "Could not reach the server.";
   }
 }
 
-let claimsList = [];
-let currentIndex = 0;
-
-function render(claims) {
-  claimsList = claims;
-  if (currentIndex >= claimsList.length) {
-    currentIndex = Math.max(0, claimsList.length - 1);
-  }
-  showCurrent();
+function makeArrow(label, disabled, onClick) {
+  const btn = document.createElement("button");
+  btn.className = "btn btn-primary req-arrow";
+  btn.textContent = label;
+  btn.disabled = disabled;
+  btn.addEventListener("click", onClick);
+  return btn;
 }
 
 function showCurrent() {
@@ -43,107 +51,81 @@ function showCurrent() {
 
   const slider = document.createElement("div");
   slider.className = "req-slider";
-
-  const prev = document.createElement("button");
-  prev.className = "req-arrow";
-  prev.textContent = "‹";
-  prev.disabled = currentIndex === 0;
-  prev.addEventListener("click", () => {
-    currentIndex--;
-    showCurrent();
-  });
-
-  const next = document.createElement("button");
-  next.className = "req-arrow";
-  next.textContent = "›";
-  next.disabled = currentIndex === claimsList.length - 1;
-  next.addEventListener("click", () => {
-    currentIndex++;
-    showCurrent();
-  });
-
-  slider.appendChild(prev);
-  slider.appendChild(makeRow(claimsList[currentIndex]));
-  slider.appendChild(next);
+  slider.append(
+    makeArrow("<", currentIndex === 0, () => { currentIndex--; showCurrent(); }),
+    makeRow(claimsList[currentIndex]),
+    makeArrow(">", currentIndex === claimsList.length - 1, () => { currentIndex++; showCurrent(); })
+  );
 
   const counter = document.createElement("p");
   counter.className = "req-counter";
-  counter.textContent = (currentIndex + 1) + " of " + claimsList.length;
+  counter.textContent = `${currentIndex + 1} of ${claimsList.length}`;
 
-  list.appendChild(slider);
-  list.appendChild(counter);
+  list.append(slider, counter);
 }
 
-function line(text) {
+function metaLine(text) {
   const p = document.createElement("p");
+  p.className = "req-meta";
   p.textContent = text;
   return p;
 }
 
-function makeButton(label, onClick) {
-  const b = document.createElement("button");
-  b.textContent = label;
-  b.addEventListener("click", onClick);
-  return b;
+function makeButton(label, className, onClick) {
+  const btn = document.createElement("button");
+  const variant = className.split(/\s+/).includes("reject")
+    ? "btn-danger"
+    : "btn-outline";
+  btn.className = `btn ${variant} ${className}`;
+  btn.textContent = label;
+  btn.addEventListener("click", onClick);
+  return btn;
 }
 
-function makeRow(c) {
+function makeRow(claim) {
   const card = document.createElement("article");
-  card.className = "req-card";
-  card.classList.add("st-" + c.status);
+  card.className = "req-card st-" + claim.status;
 
   const top = document.createElement("div");
   top.className = "req-top";
 
   const title = document.createElement("h3");
-  title.textContent = c.item ? c.item.title : "Item removed";
+  title.textContent = claim.item ? claim.item.title : "Item removed";
 
   const badge = document.createElement("span");
-  badge.className = "req-badge " + c.status;
-  badge.textContent = c.status;
+  badge.className = "req-badge " + claim.status;
+  badge.textContent = claim.status;
 
-  top.appendChild(title);
-  top.appendChild(badge);
-  card.appendChild(top);
+  top.append(title, badge);
 
-  const who = line("👤 " + (c.claimant ? c.claimant.name : "Unknown") +
-    (c.claimant && c.claimant.email ? " (" + c.claimant.email + ")" : ""));
-  who.className = "req-meta";
-  card.appendChild(who);
-
-  const proof = line("📝 " + c.proof);
-  proof.className = "req-meta";
-  card.appendChild(proof);
-
-  const when = line("🗓 " + new Date(c.createdAt).toLocaleDateString(undefined, {
-    month: "short", day: "numeric", year: "numeric"
-  }));
-  when.className = "req-meta";
-  card.appendChild(when);
+  const claimant = claim.claimant;
+  const who = "👤 " + (claimant ? claimant.name : "Unknown") +
+    (claimant && claimant.email ? ` (${claimant.email})` : "");
+  const when = new Date(claim.createdAt).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric"
+  });
 
   const actions = document.createElement("div");
   actions.className = "req-actions";
 
-  if (c.status === "pending") {
-    const approve = makeButton("Approve", () => send(c._id, "review", { decision: "approved" }));
-    approve.className = "req-btn approve";
-    const reject = makeButton("Reject", () => send(c._id, "review", { decision: "rejected" }));
-    reject.className = "req-btn reject";
-    actions.appendChild(approve);
-    actions.appendChild(reject);
-  } else if (c.status === "approved") {
-    const ret = makeButton("Mark as returned", () => send(c._id, "return", {}));
-    ret.className = "req-btn approve";
-    actions.appendChild(ret);
+  if (claim.status === "pending") {
+    actions.append(
+      makeButton("Approve", "req-btn", () => send(claim._id, "review", { decision: "approved" })),
+      makeButton("Reject", "req-btn reject", () => send(claim._id, "review", { decision: "rejected" }))
+    );
+  } else if (claim.status === "approved") {
+    actions.append(makeButton("Mark as returned", "req-btn", () => send(claim._id, "return", {})));
   }
 
-  card.appendChild(actions);
+  card.append(top, metaLine(who), metaLine("📝 " + claim.proof), metaLine("🗓 " + when), actions);
   return card;
 }
 
 async function send(id, action, body) {
   try {
-    const res = await fetch(`${API}/${id}/${action}`, {
+    const res = await fetch(`${window.CAMPUSFINDY_API_BASE}/claims/${id}/${action}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",

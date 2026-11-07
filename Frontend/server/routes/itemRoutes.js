@@ -1,99 +1,170 @@
-const express = require('express');
-const Item = require('../models/Item');
-const authMiddleware = require('../middleware/authMiddleware');
+const express = require("express");
+const Item = require("../models/Item");
+const ClaimRequest = require("../models/ClaimRequest");
+const authMiddleware = require("../middleware/authMiddleware");
+const isValidId = require("../utils/isValidId");
 
 const router = express.Router();
 
-// Post a new item (lost or found) — protected route
-router.post('/', authMiddleware, async (req, res) => {
+const cleanString = (value, maxLength) =>
+  typeof value === "string" &&
+  value.trim().length > 0 &&
+  value.trim().length <= maxLength;
+
+// Create an item
+router.post("/", authMiddleware, async (req, res, next) => {
   try {
-    const { title, description, status, category, location, contactInfo, verificationQuestion, verificationAnswer } = req.body;
-    const newItem = new Item({
+    const {
       title,
       description,
       status,
       category,
       location,
       contactInfo,
-      postedBy: req.userId,
-      verificationQuestion: verificationQuestion || null,
-      verificationAnswer: verificationAnswer || null
-    });
+      verificationQuestion,
+      verificationAnswer,
+    } = req.body || {};
 
-    await newItem.save();
-
-    res.status(201).json({ message: 'Item posted successfully', item: newItem });
-  } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
-  }
-});
-
-// Browse all items — public route
-router.get('/', async (req, res) => {
-  try {
-    const items = await Item.find().select('-contactInfo -verificationAnswer').sort({ createdAt: -1 });
-    res.status(200).json(items);
-  } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
-  }
-});
-
-// Claim an item — protected route
-router.patch('/:id/claim', authMiddleware, async (req, res) => {
-  try {
-    const item = await Item.findById(req.params.id)
-      .select('+verificationAnswer +contactInfo');
-
-    if (!item) {
-      return res.status(404).json({ message: 'Item not found' });
-    }
-
-    if (item.claimed) {
-      return res.status(400).json({ message: 'Item already claimed' });
-    }
-
-    if (item.verificationAnswer) {
-      const given = (req.body.answer || '').trim().toLowerCase();
-      if (given !== item.verificationAnswer.trim().toLowerCase()) {
-        return res.status(400).json({ message: 'Wrong answer. Try again.' });
-      }
-    }
-
-    item.claimed = true;
-    item.claimedBy = req.userId;
-    await item.save();
-
-    const result = item.toObject();
-    delete result.verificationAnswer;
-
-    res.status(200).json({ message: 'Item claimed successfully', item: result });
-  } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
-  }
-});
-
-// GET /api/items/:id/contact  -> only the person who claimed the item
-router.get('/:id/contact', authMiddleware, async (req, res) => {
-  try {
-    const item = await Item.findById(req.params.id);
-    if (!item) {
-      return res.status(404).json({ message: 'Item not found.' });
-    }
-
-    if (!item.claimed || !item.claimedBy) {
-      return res.status(403).json({ message: 'This item has not been claimed yet.' });
-    }
-
-    if (String(item.claimedBy) !== String(req.userId)) {
-      return res.status(403).json({
-        message: 'Only the person who claimed this item can see the contact details.'
+    if (
+      !cleanString(title, 120) ||
+      !cleanString(description, 2000) ||
+      !cleanString(location, 150) ||
+      !cleanString(contactInfo, 200)
+    ) {
+      return res.status(400).json({
+        message: "Invalid title, description, location or contact information",
       });
     }
 
-    res.json({ contactInfo: item.contactInfo });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    if (!["lost", "found"].includes(status)) {
+      return res.status(400).json({
+        message: "Status must be lost or found",
+      });
+    }
+
+    if (
+      category !== undefined &&
+      (typeof category !== "string" || category.length > 60)
+    ) {
+      return res.status(400).json({
+        message: "Invalid category",
+      });
+    }
+
+    if (
+      verificationQuestion != null &&
+      (typeof verificationQuestion !== "string" ||
+        verificationQuestion.trim().length > 300)
+    ) {
+      return res.status(400).json({
+        message: "Invalid verification question",
+      });
+    }
+
+    if (
+      verificationAnswer != null &&
+      (typeof verificationAnswer !== "string" ||
+        verificationAnswer.trim().length > 200)
+    ) {
+      return res.status(400).json({
+        message: "Invalid verification answer",
+      });
+    }
+
+    const item = await Item.create({
+      title: title.trim(),
+      description: description.trim(),
+      status,
+      category:
+        typeof category === "string" && category.trim()
+          ? category.trim()
+          : "other",
+      location: location.trim(),
+      contactInfo: contactInfo.trim(),
+      postedBy: req.userId,
+      verificationQuestion:
+        verificationQuestion?.trim() || null,
+      verificationAnswer:
+        verificationAnswer?.trim() || null,
+    });
+
+    // Never return private contact or verification answers.
+    const safeItem = item.toObject();
+    delete safeItem.contactInfo;
+    delete safeItem.verificationAnswer;
+
+    return res.status(201).json({
+      message: "Item posted successfully",
+      item: safeItem,
+    });
+  } catch (error) {
+    next(error);
   }
 });
+
+// Browse public items
+router.get("/", async (req, res, next) => {
+  try {
+    const items = await Item.find({
+      state: "open",
+      claimed: false,
+    })
+      .select("-contactInfo -verificationAnswer -verificationQuestion")
+      .populate("postedBy", "name")
+      .sort({ createdAt: -1 })
+      .limit(100)
+      .lean();
+
+    return res.json(items);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Securely release contact information after an approved claim.
+router.get(
+  "/:id/contact",
+  authMiddleware,
+  async (req, res, next) => {
+    try {
+      if (!isValidId(req.params.id)) {
+        return res.status(400).json({
+          message: "Invalid item ID",
+        });
+      }
+
+      const item = await Item.findById(req.params.id)
+        .select("+contactInfo");
+
+      if (!item) {
+        return res.status(404).json({
+          message: "Item not found",
+        });
+      }
+
+      const claim = await ClaimRequest.findOne({
+        item: item._id,
+        claimant: req.userId,
+        status: { $in: ["approved", "returned"] },
+      }).select("_id");
+
+      if (!claim) {
+        return res.status(403).json({
+          message: "An approved claim is required",
+        });
+      }
+
+      return res.json({
+        contactInfo: item.contactInfo,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// IMPORTANT:
+// There is intentionally NO PATCH /:id/claim route.
+// Claims must go through POST /api/claims/:itemId.
 
 module.exports = router;

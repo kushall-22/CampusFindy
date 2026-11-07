@@ -1,8 +1,14 @@
+// ==========================================================================
+// CampusFindy — theme.js  (loaded on every page)
+// Dark/light theme, the ⋮ header menu, and logout.
+// ==========================================================================
+
+// ---------- Theme ----------
+
 const savedTheme = localStorage.getItem("theme");
 const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-const initialTheme = savedTheme || (prefersDark ? "dark" : "light");
 
-document.documentElement.dataset.theme = initialTheme;
+document.documentElement.dataset.theme = savedTheme || (prefersDark ? "dark" : "light");
 
 const themeToggle = document.getElementById("themeToggle");
 
@@ -24,11 +30,14 @@ if (themeToggle) {
     updateThemeButton();
   });
 }
+
+
+// ---------- Header menu ----------
+
 const menuBtn = document.getElementById("menuBtn");
 const menuDropdown = document.getElementById("menuDropdown");
 
 function setMenu(open) {
-  if (!menuBtn || !menuDropdown) return;
   menuDropdown.hidden = !open;
   menuBtn.setAttribute("aria-expanded", String(open));
 }
@@ -39,16 +48,29 @@ if (menuBtn && menuDropdown) {
     setMenu(menuDropdown.hidden);
   });
 
-  // Close when clicking anywhere else
+  // Click anywhere else, or press Escape, to close
   document.addEventListener("click", (e) => {
     if (!menuDropdown.contains(e.target)) setMenu(false);
   });
 
-  // Close with the Escape key
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
       setMenu(false);
       menuBtn.focus();
     }
+  });
+}
+
+
+// ---------- Logout ----------
+
+const logoutBtn = document.getElementById("logoutBtn");
+
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userName");
+    localStorage.removeItem("userEmail");
+    window.location.replace("login.html");
   });
 }

@@ -1,103 +1,220 @@
-const express = require('express');
-const User = require('../models/User');
-const Item = require('../models/Item');
+const express = require("express");
+const ClaimRequest = require("../models/ClaimRequest");
+const Item = require("../models/Item");
+const User = require("../models/User");
+const authMiddleware = require("../middleware/authMiddleware");
+const requireAdmin = require("../middleware/requireAdmin");
+const isValidId = require("../utils/isValidId");
 
 const router = express.Router();
 
-// Summary numbers for the admin page
-router.get('/stats', async (req, res) => {
+router.use(authMiddleware, requireAdmin);
+
+router.get("/dashboard", async (req, res, next) => {
   try {
-    const [totalUsers, openItems, claimedItems] = await Promise.all([
-      User.countDocuments(),
-      Item.countDocuments({ claimed: { $ne: true }, state: { $nin: ['closed', 'removed'] } }),
-      Item.countDocuments({ claimed: true })
+    const [
+      totalStudents,
+      totalLostReports,
+      totalFoundReports,
+      pendingClaims,
+      returnedItems,
+      recentUsers,
+      recentItems,
+      recentClaims,
+    ] = await Promise.all([
+      User.countDocuments({ role: "student" }),
+      Item.countDocuments({ status: "lost" }),
+      Item.countDocuments({ status: "found" }),
+      ClaimRequest.countDocuments({ status: "pending" }),
+      Item.countDocuments({ claimed: true }),
+      User.find({ role: "student" })
+        .select("name createdAt")
+        .sort({ createdAt: -1 })
+        .limit(10)
+        .lean(),
+      Item.find()
+        .select("title status postedBy createdAt")
+        .populate("postedBy", "name")
+        .sort({ createdAt: -1 })
+        .limit(10)
+        .lean(),
+      ClaimRequest.find()
+        .select("status claimant item updatedAt")
+        .populate("claimant", "name")
+        .populate("item", "title")
+        .sort({ updatedAt: -1 })
+        .limit(10)
+        .lean(),
     ]);
-    res.json({ stats: { totalUsers, openItems, claimedItems } });
-  } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+
+    const recentActivity = [
+      ...recentUsers.map((user) => ({
+        id: `user-${user._id}`,
+        at: user.createdAt,
+        message: `${user.name} registered as a student`,
+      })),
+      ...recentItems.map((item) => ({
+        id: `item-${item._id}`,
+        at: item.createdAt,
+        message: `${item.postedBy?.name || "A student"} reported a ${item.status} item: ${item.title}`,
+      })),
+      ...recentClaims.map((claim) => ({
+        id: `claim-${claim._id}`,
+        at: claim.updatedAt,
+        message:
+          claim.status === "pending"
+            ? `${claim.claimant?.name || "A student"} submitted a claim for ${claim.item?.title || "an item"}`
+            : `${claim.claimant?.name || "A student"}'s claim for ${claim.item?.title || "an item"} was ${claim.status}`,
+      })),
+    ]
+      .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime())
+      .slice(0, 12);
+
+    return res.json({
+      totalStudents,
+      totalLostReports,
+      totalFoundReports,
+      totalReports: totalLostReports + totalFoundReports,
+      pendingClaims,
+      returnedItems,
+      recentActivity,
+    });
+  } catch (error) {
+    next(error);
   }
 });
 
-// All reports (private fields like contact and answers are NOT sent)
-router.get('/items', async (req, res) => {
+router.get("/items", async (req, res, next) => {
   try {
-    const items = await Item.find({ state: { $ne: 'removed' } })
+    const items = await Item.find()
+      .select("-contactInfo -verificationAnswer -verificationQuestion")
+      .populate("postedBy", "name")
       .sort({ createdAt: -1 })
       .limit(200)
-      .populate('postedBy', 'name')
-      .select('title description location status claimed state createdAt postedBy');
+      .lean();
 
-    res.json({
-      items: items.map(i => ({
-        _id: i._id,
-        title: i.title,
-        description: i.description,
-        location: i.location,
-        status: i.status,
-        claimed: !!i.claimed,
-        state: i.state || (i.claimed ? 'claimed' : 'open'),
-        createdAt: i.createdAt,
-        reporterName: i.postedBy ? i.postedBy.name : ''
-      }))
+    return res.json(items);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.patch("/items/:id/state", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { state } = req.body || {};
+
+    if (!isValidId(id)) {
+      return res.status(400).json({ message: "Invalid item ID" });
+    }
+
+    if (!["removed", "restore"].includes(state)) {
+      return res.status(400).json({
+        message: "State must be removed or restore",
+      });
+    }
+
+    const item = await Item.findById(id);
+
+    if (!item) {
+      return res.status(404).json({ message: "Item not found" });
+    }
+
+    if (state === "removed") {
+      if (item.state === "removed") {
+        return res.status(409).json({ message: "Item is already removed" });
+      }
+
+      const approvedClaim = await ClaimRequest.exists({
+        item: item._id,
+        status: "approved",
+      });
+
+      if (approvedClaim) {
+        return res.status(409).json({
+          message: "Resolve the approved claim before removing this listing",
+        });
+      }
+
+      item.state = "removed";
+      await item.save();
+
+      await ClaimRequest.updateMany(
+        { item: item._id, status: "pending" },
+        { $set: { status: "rejected" } }
+      );
+    } else {
+      if (item.state !== "removed") {
+        return res.status(409).json({ message: "Item is not removed" });
+      }
+
+      item.state = item.claimed ? "closed" : "open";
+      await item.save();
+    }
+
+    return res.json({
+      message: state === "removed" ? "Listing removed" : "Listing restored",
     });
-  } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+  } catch (error) {
+    next(error);
   }
 });
 
-// Close a report, or remove it (hidden, not erased)
-router.patch('/items/:id/moderation', async (req, res) => {
+router.get("/users", async (req, res, next) => {
   try {
-    const { action } = req.body;
-    if (!['close', 'remove'].includes(action)) {
-      return res.status(400).json({ message: 'Invalid action' });
-    }
+    const users = await User.find()
+      .select("name email role status createdAt")
+      .sort({ createdAt: -1 })
+      .limit(200)
+      .lean();
 
-    const item = await Item.findByIdAndUpdate(
-      req.params.id,
-      { state: action === 'close' ? 'closed' : 'removed' },
-      { new: true }
-    );
-    if (!item) return res.status(404).json({ message: 'Item not found' });
-
-    console.log(`[admin] ${req.userId} ${action} item ${item._id}`);
-    res.json({ ok: true });
-  } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    return res.json(users);
+  } catch (error) {
+    next(error);
   }
 });
 
-// All users (no passwords)
-router.get('/users', async (req, res) => {
+router.patch("/users/:id/status", async (req, res, next) => {
   try {
-    const users = await User.find().sort({ _id: -1 }).limit(200).select('name email role status');
-    res.json({ users });
-  } catch (err) {
-    res.status(500).json({ message: 'Server error' });
-  }
-});
+    const { id } = req.params;
+    const { status } = req.body || {};
 
-// Suspend or restore a student
-router.patch('/users/:id/status', async (req, res) => {
-  try {
-    const { action } = req.body;
-    if (!['suspend', 'restore'].includes(action)) {
-      return res.status(400).json({ message: 'Invalid action' });
+    if (!isValidId(id)) {
+      return res.status(400).json({ message: "Invalid user ID" });
     }
 
-    const target = await User.findById(req.params.id);
-    if (!target) return res.status(404).json({ message: 'User not found' });
-    if (target.role === 'admin') {
-      return res.status(400).json({ message: 'Admin accounts cannot be suspended' });
+    if (!["active", "suspended"].includes(status)) {
+      return res.status(400).json({
+        message: "Status must be active or suspended",
+      });
     }
 
-    target.status = action === 'suspend' ? 'suspended' : 'active';
-    await target.save();
+    if (id === req.userId) {
+      return res.status(403).json({
+        message: "You cannot change your own account status",
+      });
+    }
 
-    console.log(`[admin] ${req.userId} ${action} user ${target._id}`);
-    res.json({ ok: true });
-  } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.role === "admin") {
+      return res.status(403).json({
+        message: "Administrator accounts cannot be changed here",
+      });
+    }
+
+    user.status = status;
+    await user.save();
+
+    return res.json({
+      message: status === "suspended" ? "Account suspended" : "Account reactivated",
+    });
+  } catch (error) {
+    next(error);
   }
 });
 

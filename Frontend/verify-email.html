@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Verify Email - CampusFindy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/x-icon" href="CampusFindly.ico">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="page-bg">
+  <header class="topbar">
+    <a class="brand" href="index.html">
+      <span class="brand-logo" aria-hidden="true"></span>
+      <span>ampusFindy</span>
+    </a>
+    <nav class="nav-links" aria-label="Main navigation">
+      <a href="login.html">Log In</a>
+      <button type="button" class="btn btn-nav theme-toggle" id="themeToggle">☾ Dark</button>
+    </nav>
+  </header>
+
+  <main class="login-container">
+    <h2>Verify your email</h2>
+    <p id="statusMessage" role="status" aria-live="polite">
+      Enter the 6-digit code sent to your email address.
+    </p>
+    <form id="verifyEmailForm">
+      <input type="email" id="email" placeholder="College Email" autocomplete="email" required>
+      <input
+        type="text"
+        id="code"
+        placeholder="6-digit verification code"
+        inputmode="numeric"
+        autocomplete="one-time-code"
+        maxlength="6"
+        aria-label="6-digit verification code"
+      >
+      <button type="submit" class="btn btn-primary" value="verify">Verify email</button>
+      <button type="submit" class="btn btn-outline" value="resend">Resend code</button>
+    </form>
+    <p><a href="login.html">Back to login</a></p>
+  </main>
+
+  <footer>
+    <mark>CampusFindy — built by students, for students.</mark>
+  </footer>
+
+  <script src="theme.js"></script>
+  <script src="api-config.js"></script>
+  <script src="verify-email.js"></script>
+</body>
+</html>

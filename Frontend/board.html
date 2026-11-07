@@ -1,139 +1,97 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" >
-  <title>CampusFindy — Lost & Found</title>
-  <link rel="preconnect" href="http://fonts.googleapis.com" />
-  <link href="http://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CampusFindy — Lost &amp; Found</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="icon" type="image/x-icon" href="CampusFindly.ico">
-  
+  <link rel="stylesheet" href="style.css">
+  <script>
+    if (!localStorage.getItem("token")) window.location.replace("login.html");
+  </script>
 </head>
 <body>
 
-  <!--<header class="topbar">
-  <a class="brand" href="index.html">
-    <img src="./CampusFindly-removebg-preview.png" alt="CampusFindy Logo" class="brand-logo">
-    <span>ampusFindy</span>
-  </a>-->
-
-    <header class="topbar">
-  <a class="brand" href="index.html">
-    <span class="brand-logo" aria-hidden="true"></span>
-    <span>ampusFindy</span>
-  </a>
-
-  <nav class="nav-links" aria-label="Main navigation">
-    <button type="button" class="theme-toggle" id="themeToggle">☾ Dark</button>
-  <div class="menu-wrap">
-    <button type="button" class="menu-btn" id="menuBtn"
-            aria-label="More options" aria-haspopup="true" aria-expanded="false">⋮</button>
-
-    <div class="menu-dropdown" id="menuDropdown" hidden>
-      <a class="menu-item" href="index.html">Home</a>
-      <a class="menu-item" href="dashboard.html">Dashboard</a>
-      <button type="button" class="menu-item" id="logoutBtn">Logout</button>
-    </div>
-  </div>
-</nav>
-  <!--<nav class="nav-links" aria-label="Main navigation">
-    <a href="index.html">Home</a>
-    <a href="dashboard.html">Dashboard</a>
-    <a href="post.html">Report an item</a>
-    <button type="button" class="theme-toggle" id="themeToggle">☾ Dark</button>
-  </nav>-->
-
-</header>
+  <header class="topbar">
+    <a class="brand" href="dashboard.html">
+      <span class="brand-logo" aria-hidden="true"></span>
+      <span>ampusFindy</span>
+    </a>
+    <nav class="nav-links" aria-label="Main navigation">
+      <button type="button" class="btn btn-nav theme-toggle" id="themeToggle">☾ Dark</button>
+      <button type="button" class="btn btn-nav menu-item" id="myPostsBtn">MyPosts</button>
+      <div class="menu-wrap">
+        <button type="button" class="btn menu-btn" id="menuBtn" aria-label="More options" aria-haspopup="true" aria-expanded="false">⋮</button>
+        <div class="menu-dropdown" id="menuDropdown" hidden>
+          <!-- <a class="menu-item" href="index.html">Home</a> -->
+          <a class="menu-item" href="dashboard.html">Dashboard</a>
+          <a class="menu-item" href="profile.html">Profile</a>
+          <button type="button" class="btn menu-item" id="logoutBtn">Logout</button>
+        </div>
+      </div>
+    </nav>
+  </header>
 
   <section class="hero">
     <h1>Because lost shouldn't mean gone.</h1>
-    <p class="tagline">Lost something on campus? Found something that isn't yours? Campus Findy helps students report and recover lost items quickly and easily.</p>
-  <!-- <p class="tagline">Every item posted here goes straight back to the right person — browse what's been lost or found around campus, or report your own.</p>-->
+    <p>Lost something on campus? Found something that isn't yours? Campus Findy helps students report and recover lost items quickly and easily.</p>
   </section>
 
   <div class="board-strip">
     <div class="filter-row">
-      <input type="text" id="searchInput" placeholder="Search by item name or location..." />
-      
-      <!-- <div class="status-toggle">
-        <button data-status="all" class="active">All</button>
-        <button data-status="lost">Lost</button>
-        <button data-status="found">Found</button>
-      </div> -->
-
-      <a href="post.html"><button class="report-btn">+ Report item</button></a>
+      <input type="text" id="searchInput" placeholder="Search by item name or location...">
+      <a class="btn btn-primary report-btn" href="post.html">+ Report item</a>
     </div>
   </div>
 
-  <main class="board" id="board">
-    <!-- Item cards are rendered here by script.js -->
-  </main>
+  <!-- Item cards are rendered here by board.js -->
+  <main class="board" id="board"></main>
 
-   <footer><mark>CampusFindy — built by students, for students.</mark>
-    <div class="watermark">
-      <i>kushall</i>
+  <!-- Request dialog -->
+  <div id="requestModal" class="dialog-overlay" hidden>
+    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="requestTitle">
+      <h3 id="requestTitle">Request this item</h3>
+      <p>Describe the item so the finder can verify it's yours.</p>
+      <input type="hidden" id="requestItemId">
+
+      <div class="field">
+        <label for="requestProof">Your description</label>
+        <textarea id="requestProof" rows="4" placeholder="e.g. black wallet with a blue ID card inside"></textarea>
+      </div>
+
+      <p id="requestMsg"></p>
+
+      <div class="dlg-actions">
+        <button type="button" id="requestCancelBtn" class="btn btn-ghost dlg-btn ghost">Cancel</button>
+        <button type="button" id="requestSendBtn" class="btn btn-primary dlg-btn">Send Request</button>
+      </div>
     </div>
+  </div>
+
+  <!-- Info popup (contact details, errors) -->
+  <div id="infoPopup" class="dialog-overlay" hidden>
+    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="popupTitle">
+      <button type="button" class="btn popup-x" id="popupClose" aria-label="Close">×</button>
+      <div class="popup-icon" id="popupIcon"></div>
+      <h3 id="popupTitle"></h3>
+      <p id="popupText"></p>
+      <div class="dlg-actions">
+        <button type="button" class="btn btn-ghost dlg-btn ghost" id="popupCopy" hidden>Copy</button>
+        <button type="button" class="btn btn-primary dlg-btn" id="popupOk">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <mark>CampusFindy — built by students, for students.</mark>
+    <div class="watermark"><i>kushall</i></div>
   </footer>
 
-  <div id="claimModal" class="modal-overlay" style="display: none;">
-  <div class="modal-box">
-    <h2 id="claimItemTitle">Item</h2>
-    <p class="sub" id="claimQuestionText"></p>
-
-    <div class="field" id="claimAnswerField">
-      <label for="claimAnswerInput">Your answer</label>
-      <input type="text" id="claimAnswerInput" placeholder="Type your answer here" />
-    </div>
-
-    <p id="claimResultText" style="display: none;"></p>
-
-    <div class="modal-actions">
-      <button type="button" id="claimCancelBtn" class="secondary-btn">Close</button>
-      <button type="button" id="claimSubmitBtn" class="submit-btn">Submit Answer</button>
-    </div>
-  </div>
-</div>
-
-  <script type="module" src="script.js"></script>
   <script src="theme.js"></script>
-
-  <script>
-  if (!localStorage.getItem("token")) {
-    window.location.replace("login.html");
-  }
-</script>
-
-<div id="requestModal" class="request-modal" style="display:none;">
-  <div class="request-box">
-    <h3>Request this item</h3>
-    <p class="dlg-desc">Describe the item so the finder can verify it's yours.</p>
-    <input type="hidden" id="requestItemId">
-
-    <label class="dlg-label" for="requestProof">Your description</label>
-    <textarea id="requestProof" rows="4" placeholder="e.g. black wallet with a blue ID card inside"></textarea>
-
-    <p id="requestMsg"></p>
-
-    <div class="dlg-actions">
-      <button type="button" id="requestCancelBtn" class="dlg-cancel">Cancel</button>
-      <button type="button" id="requestSendBtn" class="dlg-primary">Send Request</button>
-    </div>
-  </div>
-</div>
-
-<div id="infoPopup" class="popup-overlay" hidden>
-  <div class="popup-window" role="dialog" aria-modal="true" aria-labelledby="popupTitle">
-    <button type="button" class="popup-x" id="popupClose" aria-label="Close">×</button>
-    <div class="popup-icon" id="popupIcon"></div>
-    <h3 id="popupTitle"></h3>
-    <p id="popupText"></p>
-    <div class="popup-actions">
-      <button type="button" class="popup-btn ghost" id="popupCopy" hidden>Copy</button>
-      <button type="button" class="popup-btn" id="popupOk">OK</button>
-    </div>
-  </div>
-</div>
-
+  <script src="api-config.js"></script>
+  <script src="board.js"></script>
 </body>
 </html>

@@ -1,11 +1,17 @@
+// ==========================================================================
+// CampusFindy — myposts.js  (myposts.html)
+// Lists the logged-in user's lost and found posts.
+// ==========================================================================
+
 const token = localStorage.getItem("token");
+
 if (!token) window.location.replace("login.html");
 
 const box = document.getElementById("myPosts");
 
 async function loadMyPosts() {
   try {
-    const res = await fetch("http://localhost:5000/api/my-items", {
+    const res = await fetch(`${window.CAMPUSFINDY_API_BASE}/my-items`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     const items = await res.json();
@@ -29,12 +35,7 @@ function addLine(parent, text) {
 
 function makeCard(item) {
   const card = document.createElement("article");
-  card.className = "req-card";
-if (item.claimed) {
-  card.classList.add("is-claimed");
-} else {
-  card.classList.add(item.status === "lost" ? "is-lost" : "is-found");
-}
+  card.className = "req-card " + (item.claimed ? "is-claimed" : `is-${item.status}`);
 
   const top = document.createElement("div");
   top.className = "req-top";
@@ -42,28 +43,27 @@ if (item.claimed) {
   const title = document.createElement("h3");
   title.textContent = item.title;
 
+  // Reuses the request badge colors: red = lost, green = found
   const tag = document.createElement("span");
   tag.className = "req-badge " + (item.status === "lost" ? "rejected" : "approved");
   tag.textContent = item.status;
 
-  top.appendChild(title);
-  top.appendChild(tag);
+  top.append(title, tag);
   card.appendChild(top);
 
   addLine(card, "📝 " + item.description);
   addLine(card, "📍 " + item.location);
   addLine(card, "🗓 " + new Date(item.createdAt).toLocaleDateString(undefined, {
-    month: "short", day: "numeric", year: "numeric"
+    month: "short",
+    day: "numeric",
+    year: "numeric"
   }));
 
   if (item.claimed) {
     addLine(card, "✔ This item has been claimed");
   } else if (item.status === "lost") {
     const link = document.createElement("a");
-    link.className = "req-btn approve";
-    link.style.display = "inline-block";
-    link.style.textDecoration = "none";
-    link.style.marginTop = "10px";
+    link.className = "btn btn-outline req-btn";
     link.textContent = "See matching items";
     link.href = "board.html?mode=lost&q=" + encodeURIComponent(item.title);
     card.appendChild(link);
@@ -73,28 +73,28 @@ if (item.claimed) {
 }
 
 function makeSection(titleText, items, emptyText) {
-  const wrap = document.createElement("section");
-  wrap.className = "my-section";
+  const section = document.createElement("section");
+  section.className = "my-section";
 
   const heading = document.createElement("h3");
   heading.className = "my-section-title";
-  heading.textContent = titleText + " (" + items.length + ")";
-  wrap.appendChild(heading);
+  heading.textContent = `${titleText} (${items.length})`;
+  section.appendChild(heading);
 
   if (items.length === 0) {
-    const p = document.createElement("p");
-    p.className = "my-empty";
-    p.textContent = emptyText;
-    wrap.appendChild(p);
-    return wrap;
+    const empty = document.createElement("p");
+    empty.className = "my-empty";
+    empty.textContent = emptyText;
+    section.appendChild(empty);
+    return section;
   }
 
   const grid = document.createElement("div");
   grid.className = "my-grid";
   items.forEach((item) => grid.appendChild(makeCard(item)));
-  wrap.appendChild(grid);
+  section.appendChild(grid);
 
-  return wrap;
+  return section;
 }
 
 function render(items) {

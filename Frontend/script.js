@@ -60,7 +60,7 @@ async function showClaimedContact(item) {
 
   try {
     const response = await fetch(
-      `http://localhost:5000/api/items/${item._id}/contact`,
+      `${window.CAMPUSFINDY_API_BASE}/items/${item._id}/contact`,
       { headers: { "Authorization": `Bearer ${token}` } }
     );
 
@@ -122,41 +122,6 @@ function renderBoard(items) {
     board.appendChild(createCard(item));
   });
 }
-
-/*function applyFilters() {
-  const board = document.getElementById("board");
-  const query = currentQuery.trim().toLowerCase();
-
-  // Nothing typed yet: show a hint instead of all items
-  if (!query) {
-    if (board) {
-      board.innerHTML = `
-        <div class="empty-state">
-          Type a keyword above to search for found items.
-        </div>
-      `;
-    }
-    return;
-  }
-
-  const words = query.split(/\s+/);
-
-  const filtered = allItems.filter((item) => {
-    // Only found items are ever shown
-    if (item.status !== "found") return false;
-
-    const haystack = `
-      ${item.title}
-      ${item.location}
-      ${item.description}
-    `.toLowerCase();
-
-    // Every typed word must match
-    return words.every((w) => haystack.includes(w));
-  });
-
-  renderBoard(filtered);
-}*/
 
 // How did the visitor arrive at the board?
 const params = new URLSearchParams(window.location.search);
@@ -221,136 +186,6 @@ statusButtons.forEach((btn) => {
   });
 });
 
-// ---------- Claim modal ----------
-
-const claimModal = document.getElementById("claimModal");
-const claimItemTitle = document.getElementById("claimItemTitle");
-const claimQuestionText = document.getElementById("claimQuestionText");
-const claimAnswerField = document.getElementById("claimAnswerField");
-const claimAnswerInput = document.getElementById("claimAnswerInput");
-const claimResultText = document.getElementById("claimResultText");
-const claimCancelBtn = document.getElementById("claimCancelBtn");
-const claimSubmitBtn = document.getElementById("claimSubmitBtn");
-
-let activeClaimItem = null;
-
-function openClaimModal(item) {
-  if (item.claimed) {
-    alert("This item has already been claimed.");
-    return;
-  }
-  if (!localStorage.getItem("token")) {
-    alert("Please log in to claim an item.");
-    window.location.href = "login.html";
-    return;
-  }
-
-  activeClaimItem = item;
-
-  claimItemTitle.textContent = item.title;
-  claimAnswerInput.value = "";
-
-  claimResultText.style.display = "none";
-  claimAnswerField.style.display = "block";
-  claimSubmitBtn.style.display = "inline-block";
-
-  if (item.verificationQuestion) {
-    claimQuestionText.textContent = item.verificationQuestion;
-  } else {
-    claimQuestionText.textContent =
-      "No verification question was set for this item. You can claim it directly.";
-  }
-
-  claimModal.style.display = "flex";
-}
-
-if (claimCancelBtn) {
-  claimCancelBtn.addEventListener("click", () => {
-    claimModal.style.display = "none";
-    activeClaimItem = null;
-  });
-}
-
-if (claimSubmitBtn) {
-  claimSubmitBtn.addEventListener("click", async () => {
-    if (!activeClaimItem) return;
-
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      alert("Please log in to claim an item.");
-      return;
-    }
-
-    const answer = claimAnswerInput.value.trim();
-
-    if (
-      activeClaimItem.verificationQuestion &&
-      !answer
-    ) {
-      alert("Please enter an answer.");
-      return;
-    }
-
-    claimSubmitBtn.disabled = true;
-    claimSubmitBtn.textContent = "Checking…";
-
-    try {
-      const response = await fetch(
-        `http://localhost:5000/api/items/${activeClaimItem._id}/claim`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-          },
-          body: JSON.stringify({ answer })
-        }
-      );
-
-      const data = await response.json().catch(() => ({}));
-
-      if (!response.ok) {
-        claimResultText.style.display = "block";
-        claimResultText.textContent =
-          data.message ||
-          data.error ||
-          "Something went wrong.";
-
-        claimResultText.style.color = "#c0392b";
-      } else {
-        claimAnswerField.style.display = "none";
-        claimSubmitBtn.style.display = "none";
-
-        claimResultText.style.display = "block";
-        claimResultText.style.color = "#1a7a3c";
-
-        claimResultText.innerHTML =
-          `Item claimed successfully! Contact info: ` +
-          `<strong>${data.item.contactInfo}</strong>`;
-
-        activeClaimItem.claimed = true;
-        activeClaimItem.claimedBy = data.item.claimedBy;
-
-        applyFilters();
-      }
-
-    } catch (err) {
-      console.error("Claim failed:", err);
-
-      claimResultText.style.display = "block";
-      claimResultText.textContent =
-        "Could not connect to the backend. Please try again.";
-
-      claimResultText.style.color = "#c0392b";
-
-    } finally {
-      claimSubmitBtn.disabled = false;
-      claimSubmitBtn.textContent = "Submit Answer";
-    }
-  });
-}
-
 // ---------- Report / Post form ----------
 
 const itemForm = document.getElementById("itemForm");
@@ -358,12 +193,6 @@ if (itemForm && !localStorage.getItem("token")) {
   alert("Please log in to report an item.");
   window.location.href = "login.html";
 }
-const verifyModal = document.getElementById("verifyModal");
-const verifyCancelBtn = document.getElementById("verifyCancelBtn");
-const verifyConfirmBtn = document.getElementById("verifyConfirmBtn");
-
-let pendingItemData = null;
-
 async function submitItem(newItem, submitBtn) {
   try {
     const token = localStorage.getItem("token");
@@ -377,7 +206,7 @@ async function submitItem(newItem, submitBtn) {
     }
 
     const response = await fetch(
-      "http://localhost:5000/api/items",
+      `${window.CAMPUSFINDY_API_BASE}/items`,
       {
         method: "POST",
         headers: {
@@ -425,77 +254,48 @@ async function submitItem(newItem, submitBtn) {
   }
 }
 
+
 if (itemForm) {
   itemForm.addEventListener("submit", (e) => {
     e.preventDefault();
 
-    const status =
-      document.querySelector(
-        'input[name="status"]:checked'
-      ).value;
+    const selectedStatus = document.querySelector(
+      'input[name="status"]:checked'
+    );
 
-        const newItem = {
-      status,
-      title: document.getElementById("title").value,
-      category: document.getElementById("category").value,
-      description: document.getElementById("description").value,
-      location: document.getElementById("location").value,
-      contactInfo: document.getElementById("contactInfo").value
-    };
-
-    const submitBtn =
-      itemForm.querySelector(".submit-btn");
-
-    // Found items require a verification question
-    if (status === "found") {
-      pendingItemData = { newItem, submitBtn };
-      verifyModal.style.display = "flex";
-     } else {
-      submitBtn.disabled = true;
-      submitBtn.textContent = "Posting…";
-      submitItem(newItem, submitBtn);
-    }
-  });
-}
-
-// ---------- Verification modal ----------
-
-if (verifyCancelBtn) {
-  verifyCancelBtn.addEventListener("click", () => {
-    verifyModal.style.display = "none";
-    pendingItemData = null;
-  });
-}
-
-if (verifyConfirmBtn) {
-  verifyConfirmBtn.addEventListener("click", () => {
-    if (!pendingItemData) return;
-
-    const question =
-      document.getElementById("verifyQuestion").value.trim();
-
-    const answer =
-      document.getElementById("verifyAnswer").value.trim();
-
-    if (!question || !answer) {
-      alert("Please fill in both the question and answer.");
+    if (!selectedStatus) {
+      alert("Please select Lost or Found.");
       return;
     }
 
-    const { newItem, submitBtn } =
-      pendingItemData;
+    const status = selectedStatus.value;
 
-    newItem.verificationQuestion = question;
-    newItem.verificationAnswer = answer;
+    const newItem = {
+      status,
+      title: document.getElementById("title").value.trim(),
+      category: document.getElementById("category").value,
+      description: document.getElementById("description").value.trim(),
+      location: document.getElementById("location").value.trim(),
+      contactInfo: document.getElementById("contactInfo").value.trim()
+    };
 
-    verifyModal.style.display = "none";
+    const submitBtn = itemForm.querySelector(".submit-btn");
+
+    if (!submitBtn) {
+      console.error('Post button with class ".submit-btn" was not found.');
+      alert("Post button configuration error. Check the browser Console.");
+      return;
+    }
+
+    if (!newItem.title || !newItem.description ||
+        !newItem.location || !newItem.contactInfo) {
+      alert("Please fill in all required fields.");
+      return;
+    }
 
     submitBtn.disabled = true;
-    submitBtn.textContent = "Posting…";
-
+    submitBtn.textContent = "Posting...";
     submitItem(newItem, submitBtn);
-
-    pendingItemData = null;
   });
 }
 // ---------- Load items from backend ----------
@@ -505,7 +305,7 @@ async function loadItems() {
   if (!board) return;
 
   try {
-    const response = await fetch("http://localhost:5000/api/items");
+    const response = await fetch(`${window.CAMPUSFINDY_API_BASE}/items`);
     const data = await response.json();
 
     allItems = Array.isArray(data) ? data : data.items || [];
@@ -521,17 +321,6 @@ async function loadItems() {
   }
 }
 loadItems();
-
-const logoutBtn = document.getElementById("logoutBtn");
-
-if (logoutBtn) {
-  logoutBtn.addEventListener("click", () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("userName");
-    localStorage.removeItem("userEmail");
-    window.location.replace("login.html");
-  });
-}
 
 function openRequestModal(itemId) {
   document.getElementById('requestItemId').value = itemId;
@@ -550,7 +339,7 @@ async function submitRequest() {
   const msg = document.getElementById('requestMsg');
 
   try {
-    const res = await fetch(`http://localhost:5000/api/claims/${itemId}`, {
+    const res = await fetch(`${window.CAMPUSFINDY_API_BASE}/claims/${itemId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

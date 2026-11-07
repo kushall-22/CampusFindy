@@ -1,91 +1,103 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" >
-<title>Sign Up - Campus Findy</title>
-<link rel="preconnect" href="http://fonts.googleapis.com" />
-<link href="http://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="style.css" />
-<link rel="icon" type="image/x-icon" href="CampusFindly.ico">
-<link rel="stylesheet" href="style.css">
-<body class="page-bg">
-</body>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign Up - CampusFindy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/x-icon" href="CampusFindly.ico">
+  <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="page-bg">
 
-    <!--<header class="topbar">
+  <header class="topbar">
     <a class="brand" href="index.html">
-      <img src="./CampusFindly-removebg-preview1.png" alt="CampusFindy Logo" class="brand-logo">
-      <span><u>ampusFindy</u></span>
-    </a>-->
-
-      <header class="topbar">
-  <a class="brand" href="index.html">
-    <span class="brand-logo" aria-hidden="true"></span>
-    <span>ampusFindy</span>
-  </a>
-
+      <span class="brand-logo" aria-hidden="true"></span>
+      <span>ampusFindy</span>
+    </a>
     <nav class="nav-links" aria-label="Main navigation">
       <a href="index.html">Home</a>
-      <a href="dashboard.html">Dashboard</a>
-      <button type="button" class="theme-toggle" id="themeToggle">☾ Dark</button>
+      <button type="button" class="btn btn-nav theme-toggle" id="themeToggle">☾ Dark</button>
     </nav>
-    </header>
-    
+  </header>
+
   <div class="login-container">
     <h2>Create Account</h2>
+    <b><c>New Register</c></b>
 
     <form id="signupForm">
-      <input type="text" id="name" placeholder="Full Name" required />
-      <input type="email" id="email" placeholder="College Email" required />
-      <input type="password" id="password" placeholder="Password" required />
-      <button type="submit">Sign Up</button>
+      <input type="text" id="name" placeholder="Full Name" required>
+      <input type="email" id="email" placeholder="College Email" required>
+      <div class="password-field">
+        <input
+          type="password"
+          id="password"
+          placeholder="Password"
+          autocomplete="new-password"
+          required
+        >
+        <button
+          type="button"
+          class="btn btn-ghost password-toggle"
+          data-toggle-password
+          aria-controls="password"
+          aria-label="Show password"
+          aria-pressed="false"
+        >Show</button>
+      </div>
+      <button type="submit" class="btn btn-primary">Sign Up</button>
     </form>
 
     <p>Already have an account? <a href="login.html">Login</a></p>
-    <p id="errorMsg" style="color:red;"></p>
+    <p id="errorMsg" role="status" aria-live="polite"></p>
   </div>
 
+  <footer>
+    <mark>CampusFindy — built by students, for students.</mark>
+    <div class="watermark"><i>kushall</i></div>
+  </footer>
+
+  <script src="theme.js"></script>
+  <script src="api-config.js"></script>
+  <script src="password-toggle.js"></script>
   <script>
-    const signupForm = document.getElementById("signupForm");
     const errorMsg = document.getElementById("errorMsg");
+    const signupForm = document.getElementById("signupForm");
 
     signupForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-
-      const name = document.getElementById("name").value;
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
+      const submitButton = signupForm.querySelector('button[type="submit"]');
+      submitButton.disabled = true;
+      errorMsg.textContent = "Creating your account…";
 
       try {
-        const response = await fetch("http://localhost:5000/api/auth/signup", {
+        const res = await fetch(`${window.CAMPUSFINDY_API_BASE}/auth/signup`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, email, password })
+          body: JSON.stringify({
+            name: document.getElementById("name").value,
+            email: document.getElementById("email").value,
+            password: document.getElementById("password").value
+          })
         });
+        const data = await res.json().catch(() => ({}));
 
-        const data = await response.json();
-
-        if (!response.ok) {
+        if (!res.ok) {
           errorMsg.textContent = data.message || "Signup failed";
           return;
         }
 
-        // Signup successful, redirect to login
-        window.location.href = "login.html";
-      } catch (error) {
+        const email = document.getElementById("email").value.trim();
+        window.location.href = `verify-email.html?email=${encodeURIComponent(email)}`;
+      } catch (err) {
+        console.error("CampusFindy signup error:", err);
         errorMsg.textContent = "Could not reach server. Is it running?";
+      } finally {
+        submitButton.disabled = false;
       }
     });
   </script>
-  <script src="theme.js"></script>
-  
-  <footer><mark>CampusFindy — built by students, for students.</mark>
-    <div class="watermark">
-      <i>kushall</i>
-    </div>
-  </footer>
-
 </body>
 </html>

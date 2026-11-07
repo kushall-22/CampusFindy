@@ -1,17 +1,30 @@
-const express = require('express');
-const router = express.Router();
-const authMiddleware = require('../middleware/authMiddleware');
-const Item = require('../models/Item');
+const express = require("express");
+const mongoose = require("mongoose");
+const authMiddleware = require("../middleware/authMiddleware");
+const Item = require("../models/Item");
 
-// GET /api/my-items  -> everything the logged-in user posted
-router.get('/', authMiddleware, async (req, res) => {
+const router = express.Router();
+
+// GET /api/my-items
+router.get("/", authMiddleware, async (req, res, next) => {
   try {
-    const items = await Item.find({ postedBy: req.userId })
-      .select('-verificationAnswer')
-      .sort({ createdAt: -1 });
-    res.json(items);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    if (!mongoose.isValidObjectId(req.userId)) {
+      return res.status(401).json({
+        message: "Invalid user account",
+      });
+    }
+
+    const items = await Item.find({
+      postedBy: req.userId,
+    })
+      .select("-contactInfo -verificationAnswer -verificationQuestion")
+      .sort({ createdAt: -1 })
+      .limit(100)
+      .lean();
+
+    return res.json(items);
+  } catch (error) {
+    next(error);
   }
 });
 

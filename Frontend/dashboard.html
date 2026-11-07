@@ -3,151 +3,131 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Dashboard - Campus Findy</title>
-  <link rel="preconnect" href="http://fonts.googleapis.com">
-  <link href="http://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <title>Dashboard - CampusFindy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="icon" type="image/x-icon" href="CampusFindly.ico">
   <link rel="stylesheet" href="style.css">
-  
 </head>
-<body  class="page-bg">
+<body class="page-bg">
 
-    <!--<header class="topbar">
+  <header class="topbar">
     <a class="brand" href="index.html">
-      <img src="./CampusFindly-removebg-preview1.png" alt="CampusFindy Logo" class="brand-logo">
+      <span class="brand-logo" aria-hidden="true"></span>
       <span>ampusFindy</span>
-    </a>-->
-
-      <header class="topbar">
-            <a class="brand" href="index.html">
-    <span class="brand-logo" aria-hidden="true"></span>
-    <span>ampusFindy</span>
-  </a>
-      
-
+    </a>
     <nav class="nav-links" aria-label="Main navigation">
-      <button type="button" class="theme-toggle" id="themeToggle">☾ Dark</button>
-  <div class="menu-wrap">
-    <button type="button" class="menu-btn" id="menuBtn"
-            aria-label="More options" aria-haspopup="true" aria-expanded="false">⋮</button>
-
-            <div class="menu-dropdown" id="menuDropdown" hidden>
-      <a class="menu-item" href="index.html">Home</a>
-      <a class="menu-item" href="dashboard.html">Dashboard</a>
-      <button type="button" class="menu-item" id="logoutBtn">Logout</button>
-    </div>
-  </div>
-</nav>  
-   <!-- <nav class="nav-links" aria-label="Main navigation">
-      <a href="index.html">Home</a>
-      <a href="dashboard.html">Dashboard</a>
-      <a href="post.html">Report an item</a>
-      <button type="button" class="theme-toggle" id="themeToggle">☾ Dark</button>
-    </nav>-->
-    </header>
-  
-    <!-- <div class="dashboard-wrap">
-    <h2>What would you like to do?</h2>
-
-    <div class="dashboard-options">
-      <a href="myposts.html" class="dashboard-card">
-  <h3>My Posts</h3>
-  <p>See the lost and found items you posted.</p>
-</a>
-
-      <a href="post.html" class="dashboard-card">
-        <h3>Post an Item</h3>
-        <p>Report something you lost or found on campus.</p>
-      </a>
-      <a href="board.html" class="dashboard-card">
-        <h3>Claim / Search</h3>
-        <p>Browse the board to find or claim an item.</p>
-      </a>
-      <a href="requests.html" class="dashboard-card">
-  <h3>Requests on my items</h3>
-  <p>Approve or reject claim requests and track returns.</p>
-</a>
-    </div>
-  </div> -->
+      <button type="button" class="btn btn-nav theme-toggle" id="themeToggle">☾ Dark</button>
+      <button type="button" class="btn btn-nav menu-item" id="myPostsBtn">MyPosts</button>
+      
+      <div class="menu-wrap">
+        <button type="button" class="btn menu-btn" id="menuBtn" aria-label="More options" aria-haspopup="true" aria-expanded="false">⋮</button>
+        <div class="menu-dropdown" id="menuDropdown" hidden>
+          <a class="menu-item" href="index.html">Home</a>
+          <a class="menu-item" href="profile.html">Profile</a>
+          <button type="button" class="btn menu-item" id="logoutBtn">Logout</button>
+        </div>
+      </div>
+    </nav>
+  </header>
 
   <div class="dashboard-wrap">
-  <h2>What would you like to do?</h2>
-  <p class="dash-sub">Choose an action to get started.</p>
+    <h2>What would you like to do?</h2>
+    <p class="dash-sub">Choose an action to get started.</p>
 
-  <div class="dashboard-options">
+    <div class="dashboard-options">
 
-    <a href="myposts.html" class="dashboard-card dash-row c-blue">
-      <span class="dash-icon">📄</span>
-      <span class="dash-text">
-        <h3>My Posts</h3>
-        <p>See the lost and found items you posted.</p>
-      </span>
-      <span class="dash-arrow">→</span>
-    </a>
+      <!-- <a href="myposts.html" class="dashboard-card c-blue">
+        <span class="dash-icon">📄</span>
+        <span class="dash-text">
+          <h3>My Posts</h3>
+          <p>See the lost and found items you posted.</p>
+        </span>
+        <span class="dash-arrow">→</span>
+      </a> -->
 
-    <a href="post.html" class="dashboard-card dash-row c-green">
-      <span class="dash-icon">➕</span>
-      <span class="dash-text">
-        <h3>Report an Item</h3>
-        <p>Report something you lost or found on campus.</p>
-      </span>
-      <span class="dash-arrow">→</span>
-    </a>
+      <a href="post.html" class="dashboard-card c-green">
+        <span class="dash-icon">➕</span>
+        <span class="dash-text">
+          <h3>Report an Item</h3>
+          <p>Report something you lost or found on campus.</p>
+        </span>
+        <span class="dash-arrow">→</span>
+      </a>
 
-    <a href="board.html" class="dashboard-card dash-row c-purple">
-      <span class="dash-icon">✅</span>
-      <span class="dash-text">
-        <h3>Claimed Items</h3>
-        <p>See items that have already been claimed.</p>
-      </span>
-      <span class="dash-arrow">→</span>
-    </a>
+      <a href="board.html" class="dashboard-card c-purple">
+        <span class="dash-icon">✅</span>
+        <span class="dash-text">
+          <h3>Claimed Items</h3>
+          <p>See items that have already been claimed.</p>
+        </span>
+        <span class="dash-arrow">→</span>
+      </a>
 
-    <a href="requests.html" class="dashboard-card dash-row c-amber">
-      <span class="dash-icon">🔔</span>
-      <span class="dash-text">
-        <h3>Requests on found items</h3>
-        <p>Approve or reject claim requests and track returns.</p>
-      </span>
-      <span class="dash-arrow">→</span>
-    </a>
+      <a href="requests.html" class="dashboard-card c-amber">
+        <span class="dash-icon">🔔</span>
+        <span class="dash-text">
+          <h3>Requests on found items</h3>
+          <p>Approve or reject claim requests and track returns.</p>
+        </span>
+        <span class="dash-arrow">→</span>
+      </a>
 
+      <a href="admin.html" class="dashboard-card c-blue admin-tools-card" id="adminToolsCard" hidden>
+        <span class="dash-icon">🛡️</span>
+        <span class="dash-text">
+          <h3>Admin tools</h3>
+          <p>Moderate listings and manage student accounts.</p>
+        </span>
+        <span class="dash-arrow">→</span>
+      </a>
+
+    </div>
   </div>
-</div>
 
+  <footer>
+    <mark>CampusFindy — built by students, for students.</mark>
+    <div class="watermark"><i>Developing By<br>kushall</i></div>
+  </footer>
+
+  <script src="theme.js"></script>
+  <script src="api-config.js"></script>
   <script>
-   /* const token = localStorage.getItem("token");
+    const adminToolsCard = document.getElementById("adminToolsCard");
+    const dashboardToken = localStorage.getItem("token");
 
-    if (!token) {
-      window.location.replace("login.html");
-    } */
+    if (dashboardToken) {
+      fetch(`${window.CAMPUSFINDY_API_BASE}/auth/me`, {
+        headers: { Authorization: `Bearer ${dashboardToken}` }
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`Could not check admin access (${response.status}).`);
+          }
+          return response.json();
+        })
+        .then((data) => {
+          if (data?.user?.role === "admin") adminToolsCard.hidden = false;
+        })
+        .catch((error) => console.error("Could not check admin access:", error));
+    }
 
-    document.getElementById("logoutBtn").addEventListener("click", () => {
-      localStorage.removeItem("token");
-      localStorage.removeItem("userName");
-      localStorage.removeItem("userEmail");
-      window.location.replace("login.html");
+    document.getElementById("myPostsBtn").addEventListener("click", () => {
+      window.location.href = localStorage.getItem("token")
+        ? "myposts.html"
+        : "login.html";
     });
 
+    // Send logged-out visitors to the login page when they pick an action
     document.querySelectorAll(".dashboard-card").forEach((card) => {
       card.addEventListener("click", (e) => {
         if (!localStorage.getItem("token")) {
           e.preventDefault();
           window.location.href = "login.html";
-    }
-  });
-});
+        }
+      });
+    });
   </script>
-  <script src="theme.js"></script>
-  <script src="script.js"></script>
-  </script>
-
-  <footer><mark>CampusFindy — built by students, for students.</mark>
-    <div class="watermark">
-      <i>kushall</i>
-    </div>
-  </footer>
-
 </body>
 </html>

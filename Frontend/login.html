@@ -1,32 +1,34 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" >
-<title>Login - Campus Findy</title>
-<link rel="preconnect" href="http://fonts.googleapis.com" />
-<link href="http://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="style.css" />
-<link rel="icon" type="image/x-icon" href="CampusFindly.ico">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Login - CampusFindy</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+
+  <link rel="icon" type="image/x-icon" href="CampusFindly.ico">
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body class="page-bg">
 
-  <!--<header class="topbar">
+  <header class="topbar">
     <a class="brand" href="index.html">
-      <img src="./CampusFindly-removebg-preview1.png" alt="CampusFindy Logo" class="brand-logo">
+      <span class="brand-logo" aria-hidden="true"></span>
       <span>ampusFindy</span>
-    </a>-->
-
-      <header class="topbar">
-      <a class="brand" href="index.html">
-    <span class="brand-logo" aria-hidden="true"></span>
-    <span>ampusFindy</span>
-      </a>
+    </a>
 
     <nav class="nav-links" aria-label="Main navigation">
       <a href="index.html">Home</a>
-      <button type="button" class="theme-toggle" id="themeToggle">☾ Dark</button>
+      <button type="button" class="btn btn-nav theme-toggle" id="themeToggle">
+        ☾ Dark
+      </button>
     </nav>
   </header>
 
@@ -34,57 +36,113 @@
     <h2>Student Login</h2>
 
     <form id="loginForm">
-      <input type="email" id="email" placeholder="College Email" required />
-      <input type="password" id="password" placeholder="Password" required />
-      <button type="submit">Login</button>
+      <input
+        type="email"
+        id="email"
+        placeholder="College Email"
+        autocomplete="email"
+        required
+      >
+
+      <div class="password-field">
+        <input
+          type="password"
+          id="password"
+          placeholder="Password"
+          autocomplete="current-password"
+          required
+        >
+        <button
+          type="button"
+          class="btn btn-ghost password-toggle"
+          data-toggle-password
+          aria-controls="password"
+          aria-label="Show password"
+          aria-pressed="false"
+        >Show</button>
+      </div>
+
+      <button type="submit" class="btn btn-primary" id="loginButton">Login</button>
     </form>
 
+    <p><a href="forgot-password.html">Forgot password?</a></p>
+    <p><a href="verify-email.html">Enter verification code or resend it</a></p>
     <p>New here? <a href="signup.html">Create an account</a></p>
-    <p id="errorMsg" style="color:red;"></p>
+
+    <p id="errorMsg" role="status" aria-live="polite"></p>
   </div>
+
+  <footer>
+    <mark>CampusFindy — built by students, for students.</mark>
+    <div class="watermark"><i>kushall</i></div>
+  </footer>
+
+  <script src="theme.js"></script>
+  <script src="api-config.js"></script>
+  <script src="password-toggle.js"></script>
 
   <script>
     const loginForm = document.getElementById("loginForm");
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
     const errorMsg = document.getElementById("errorMsg");
+    const loginButton = document.getElementById("loginButton");
 
     loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+
+      errorMsg.textContent = "Logging in...";
+      loginButton.disabled = true;
 
       try {
-        const response = await fetch("http://localhost:5000/api/auth/login", {
+        const res = await fetch(`${window.CAMPUSFINDY_API_BASE}/auth/login`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password })
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            email: email,
+            password: password
+          })
         });
 
-        const data = await response.json().catch(() => ({}));
+        const data = await res.json();
 
-        if (!response.ok) {
-          errorMsg.textContent = data.message || "Login failed";
+        if (!res.ok) {
+          errorMsg.textContent =
+            data.message || "Login failed. Please check your credentials.";
           return;
         }
 
-        // Save token and user info for later use
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("userName", data.name);
-        localStorage.setItem("userEmail", data.email);
+        if (typeof data.token !== "string" || !data.token) {
+          errorMsg.textContent = "Login failed. The server returned an invalid response.";
+          return;
+        }
 
-        window.location.href = "dashboard.html";
+        localStorage.setItem("token", data.token);
+        if (typeof data.name === "string") {
+          localStorage.setItem("userName", data.name);
+        }
+        if (typeof data.email === "string") {
+          localStorage.setItem("userEmail", data.email);
+        }
+
+        window.location.replace("dashboard.html");
+
       } catch (error) {
-        errorMsg.textContent = "Could not reach server. Is it running on port 5000?";
+        console.error("CampusFindy login error:", error);
+
+        errorMsg.textContent =
+          "Could not reach server. Check that the backend is running.";
+
+      } finally {
+        loginButton.disabled = false;
       }
     });
   </script>
-  <script src="theme.js"></script>
-
-  <footer><mark>CampusFindy — built by students, for students.</mark>
-    <div class="watermark">
-      <i>kushall</i>
-    </div>
-  </footer>
 
 </body>
 </html>

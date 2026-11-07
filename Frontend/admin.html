@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin Tools - CampusFindy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/x-icon" href="CampusFindly.ico">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    if (!localStorage.getItem("token")) window.location.replace("login.html");
+  </script>
+</head>
+<body class="page-bg">
+  <header class="topbar">
+    <a class="brand" href="dashboard.html">
+      <span class="brand-logo" aria-hidden="true"></span>
+      <span>ampusFindy</span>
+    </a>
+    <nav class="nav-links" aria-label="Main navigation">
+      <a href="dashboard.html">Dashboard</a>
+      <button type="button" class="btn btn-nav theme-toggle" id="themeToggle">☾ Dark</button>
+    </nav>
+  </header>
+
+  <main class="dashboard-wrap my-page admin-page">
+    <h2>Admin Tools</h2>
+    <p class="dash-sub">Monitor campus activity, moderate listings, and manage student accounts.</p>
+
+    <section class="admin-section" aria-labelledby="adminOverviewTitle">
+      <h3 id="adminOverviewTitle">Overview</h3>
+      <p class="admin-status" id="dashboardStatus" role="status" aria-live="polite">Loading dashboard…</p>
+      <div class="admin-metrics" id="adminMetrics">
+        <article class="admin-metric">
+          <h4>Total registered students</h4>
+          <p id="totalStudents">—</p>
+        </article>
+        <article class="admin-metric">
+          <h4>Lost reports</h4>
+          <p id="totalLostReports">—</p>
+        </article>
+        <article class="admin-metric">
+          <h4>Found reports</h4>
+          <p id="totalFoundReports">—</p>
+        </article>
+        <article class="admin-metric">
+          <h4>Pending claims</h4>
+          <p id="pendingClaims">—</p>
+        </article>
+        <article class="admin-metric">
+          <h4>Successfully returned</h4>
+          <p id="returnedItems">—</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="admin-section" aria-labelledby="adminActivityTitle">
+      <h3 id="adminActivityTitle">Recent user activity</h3>
+      <p class="admin-status">Latest student registrations, item reports, and claim updates.</p>
+      <ol class="admin-activity" id="adminActivity" aria-live="polite"></ol>
+    </section>
+
+    <section class="admin-section" aria-labelledby="adminItemsTitle">
+      <h3 id="adminItemsTitle">Listings</h3>
+      <p class="admin-status" id="itemsStatus" role="status" aria-live="polite">Loading listings…</p>
+      <div class="my-grid" id="adminItems"></div>
+    </section>
+
+    <section class="admin-section" aria-labelledby="adminUsersTitle">
+      <h3 id="adminUsersTitle">Student accounts</h3>
+      <p class="admin-status" id="usersStatus" role="status" aria-live="polite">Loading accounts…</p>
+      <div class="my-grid" id="adminUsers"></div>
+    </section>
+  </main>
+
+  <script src="theme.js"></script>
+  <script src="api-config.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
