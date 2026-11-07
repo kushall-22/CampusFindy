@@ -146,7 +146,7 @@ app.use("/api/claims", claimRoutes);
 app.use("/api/my-items", myItemsRoutes);
 app.use("/api/admin", adminRoutes);
 
-app.use("/server", (req, res) => {
+pp.use("/server", (req, res) => {
   res.sendStatus(404);
 });
 app.use(express.static(path.join(__dirname, ".."), { dotfiles: "deny" }));
