@@ -36,14 +36,18 @@ if (process.env.JWT_SECRET.length < 32) {
   throw new Error("JWT_SECRET must be at least 32 characters");
 }
 
-// CORS: configure FRONTEND_URL in your environment
-const frontendUrls = (process.env.FRONTEND_URL || "http://localhost:3000")
+// CORS: allow configured frontend origins or Render's service URL.
+const frontendUrlConfig =
+  process.env.FRONTEND_URL || process.env.RENDER_EXTERNAL_URL;
+const frontendUrls = (frontendUrlConfig || "http://localhost:3000")
   .split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);
 
-if (process.env.NODE_ENV === "production" && !process.env.FRONTEND_URL) {
-  throw new Error("FRONTEND_URL must be configured in production");
+if (process.env.NODE_ENV === "production" && !frontendUrlConfig) {
+  throw new Error(
+    "FRONTEND_URL or RENDER_EXTERNAL_URL must be configured in production"
+  );
 }
 
 const allowedOrigins = frontendUrls.map((origin) => {
@@ -142,9 +146,10 @@ app.use("/api/claims", claimRoutes);
 app.use("/api/my-items", myItemsRoutes);
 app.use("/api/admin", adminRoutes);
 
-app.get("/", (req, res) => {
-  res.send("CampusFindy backend is running");
+app.use("/server", (req, res) => {
+  res.sendStatus(404);
 });
+app.use(express.static(path.join(__dirname, ".."), { dotfiles: "deny" }));
 
 // 404 handler
 app.use((req, res) => {

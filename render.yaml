@@ -15,10 +15,6 @@ services:
         sync: false
       - key: JWT_SECRET
         sync: false
-      - key: FRONTEND_URL
-        sync: false
-      - key: PASSWORD_RESET_URL
-        sync: false
       - key: SMTP_HOST
         sync: false
       - key: SMTP_PORT

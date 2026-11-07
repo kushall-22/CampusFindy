@@ -53,7 +53,11 @@ async function sendVerificationCode(user, mailer) {
 function getAuthMailer() {
   const port = Number(process.env.SMTP_PORT);
   const from = process.env.MAIL_FROM || process.env.SMTP_USER;
-  const frontendOrigin = (process.env.FRONTEND_URL || "")
+  const frontendOrigin = (
+    process.env.FRONTEND_URL ||
+    process.env.RENDER_EXTERNAL_URL ||
+    ""
+  )
     .split(",")[0]
     .trim()
     .replace(/\/+$/, "");
@@ -74,7 +78,7 @@ function getAuthMailer() {
   try {
     resetPage = new URL(
       process.env.PASSWORD_RESET_URL ||
-        `${frontendOrigin}/Frontend/reset-password.html`
+        `${frontendOrigin}/reset-password.html`
     );
   } catch {
     return null;

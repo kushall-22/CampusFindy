@@ -37,22 +37,20 @@ CampusFindy is a campus lost-and-found application with a static HTML/CSS/JavaSc
 
 The root `package.json` is the sole dependency manifest for the backend. Run install, start, development, and test commands from the repository root.
 
-`Frontend/api-config.js` selects the local API URL on `localhost` and uses the same-origin `/api` path elsewhere. If the deployed frontend and API use different origins, set `window.CAMPUSFINDY_API_BASE` to the full API base URL before `api-config.js` loads, or update its deployment default. Configure the backend's `FRONTEND_URL` with the exact frontend origin; multiple allowed HTTPS origins can be comma-separated in production.
+`Frontend/api-config.js` selects the local API URL on `localhost` and uses the same-origin `/api` path elsewhere. If the deployed frontend and API use different origins, set `window.CAMPUSFINDY_API_BASE` to the full API base URL before `api-config.js` loads, or update its deployment default. Configure the backend's `FRONTEND_URL` with the exact frontend origin when using a separate frontend or custom domain; multiple allowed HTTPS origins can be comma-separated in production. Render's `RENDER_EXTERNAL_URL` supplies the origin for the default single-service deployment.
 
-### Free Cloudflare Pages + Render setup
+### Render deployment
 
-This project can use a free `*.pages.dev` frontend URL and a free `*.onrender.com` API URL. Free service limits can change; Render's free web service may sleep when idle, so the first request after inactivity can take longer.
+The Render web service serves both the static frontend and the API from one `*.onrender.com` URL. Free service limits can change; Render's free web service may sleep when idle, so the first request after inactivity can take longer.
 
 1. Push this repository to GitHub.
-2. In Cloudflare, create a **Pages** project from the repository. Set the root directory to `Frontend`, leave the build command empty, and set the build output directory to `.`. After deployment, copy the site's HTTPS origin (for example, `https://campusfindy.pages.dev`).
-3. In Render, create a **Blueprint** from the same repository and use the root `render.yaml`. Set the prompted environment values in Render's dashboard; do not put credentials in the repository:
+2. In Render, create a **Blueprint** from the repository and use the root `render.yaml`. The service builds with `npm ci` and starts with `npm start`; keep the service root directory at the repository root.
+3. Set the prompted environment values in Render's dashboard; do not put credentials in the repository:
    - `MONGO_URI`: your MongoDB Atlas connection string. Use a MongoDB deployment that supports transactions for item claims.
    - `JWT_SECRET`: a randomly generated secret with at least 32 characters.
-   - `FRONTEND_URL`: the exact Cloudflare Pages origin, without a trailing slash.
-   - `PASSWORD_RESET_URL`: the full URL to the deployed page, e.g. `https://campusfindy.pages.dev/reset-password.html`.
    - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM`: your email provider's SMTP settings. These are required for verification and password-reset emails.
-4. Once Render deploys, copy its HTTPS service URL (for example, `https://campusfindy-api.onrender.com`). In `Frontend/api-config.js`, set the non-local `defaultApiBase` to that URL followed by `/api` (for example, `https://campusfindy-api.onrender.com/api`), then commit and push. Cloudflare Pages will redeploy the frontend.
-5. Open `https://<your-render-service>.onrender.com/api/health`; a healthy deployment returns `"status":"ok"` when MongoDB is connected. Test signup, email verification, login, and password reset on the Pages site.
+4. If you use a custom domain or a separate frontend, set `FRONTEND_URL` to its exact HTTPS origin in the service's **Environment** settings. Otherwise, Render's `RENDER_EXTERNAL_URL` is used automatically. The password-reset page defaults to the frontend origin's `/reset-password.html`; set `PASSWORD_RESET_URL` only if you use a custom URL.
+5. Open `https://<your-render-service>.onrender.com/` for the frontend and `https://<your-render-service>.onrender.com/api/health` for the API health check. A healthy API returns `"status":"ok"` when MongoDB is connected. Test signup, email verification, login, and password reset.
 
 The Render blueprint sets `TRUST_PROXY_HOPS=1` for the Render proxy and uses `/api/health` as its readiness check. Configure MongoDB network access for the deployed API as required by your provider; never expose database credentials in frontend files or commit them to GitHub. The built-in rate limiter uses in-memory counters; multiple API instances need a shared rate-limit store to enforce limits consistently.
 
