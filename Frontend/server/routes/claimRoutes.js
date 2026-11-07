@@ -29,7 +29,7 @@ router.post("/:itemId", authMiddleware, async (req, res, next) => {
       });
     }
 
-    const item = await Item.findById(itemId).select("+contactInfo");
+    const item = await Item.findById(itemId).select("+approvedClaim");
 
     if (!item) {
       return res.status(404).json({
@@ -37,11 +37,7 @@ router.post("/:itemId", authMiddleware, async (req, res, next) => {
       });
     }
 
-    if (
-      item.status !== "found" ||
-      item.state !== "open" ||
-      item.claimed
-    ) {
+    if (item.status !== "found" || item.state !== "open" || item.claimed) {
       return res.status(409).json({
         message: "This item is not available to claim",
       });
@@ -50,6 +46,23 @@ router.post("/:itemId", authMiddleware, async (req, res, next) => {
     if (String(item.postedBy) === String(req.userId)) {
       return res.status(403).json({
         message: "You cannot claim your own item",
+      });
+    }
+
+    if (item.approvedClaim) {
+      return res.status(409).json({
+        message: "Another claim has already been approved for this item",
+      });
+    }
+
+    const approvedClaim = await ClaimRequest.findOne({
+      item: item._id,
+      status: "approved",
+    }).select("_id");
+
+    if (approvedClaim) {
+      return res.status(409).json({
+        message: "Another claim has already been approved for this item",
       });
     }
 
@@ -75,7 +88,6 @@ router.post("/:itemId", authMiddleware, async (req, res, next) => {
     return res.status(201).json({
       message: "Claim request submitted",
       claim,
-      contactInfo: item.contactInfo,
     });
   } catch (error) {
     next(error);
@@ -99,8 +111,27 @@ router.get("/received", authMiddleware, async (req, res, next) => {
   }
 });
 
+// View claims submitted by the signed-in claimant.
+router.get("/sent", authMiddleware, async (req, res, next) => {
+  try {
+    const claims = await ClaimRequest.find({
+      claimant: req.userId,
+    })
+      .populate("item", "title status location state")
+      .populate("finder", "name")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return res.json(claims);
+  } catch (error) {
+    next(error);
+  }
+});
+
 // Approve or reject a pending claim
 router.patch("/:id/review", authMiddleware, async (req, res, next) => {
+  let session;
+
   try {
     const { id } = req.params;
     const { decision } = req.body || {};
@@ -133,42 +164,112 @@ router.patch("/:id/review", authMiddleware, async (req, res, next) => {
 
     if (claim.status !== "pending") {
       return res.status(409).json({
-        message: "Only pending requests can be reviewed",
+        message:
+          claim.reviewMessage || "Only pending requests can be reviewed",
       });
     }
 
-    const item = await Item.findById(claim.item);
+    session = await mongoose.startSession();
+    let updatedClaim;
 
-    if (!item || item.state !== "open" || item.claimed) {
-      return res.status(409).json({
-        message: "The item is no longer available",
-      });
-    }
-
-    // Conditional update prevents two requests from reviewing
-    // the same pending claim at the same time.
-    const updatedClaim = await ClaimRequest.findOneAndUpdate(
-      {
+    await session.withTransaction(async () => {
+      const pendingClaim = await ClaimRequest.findOne({
         _id: id,
         finder: req.userId,
         status: "pending",
-      },
-      { $set: { status: decision } },
-      { new: true, runValidators: true }
-    );
+      }).session(session);
 
-    if (!updatedClaim) {
-      return res.status(409).json({
-        message: "This claim was already reviewed",
-      });
-    }
+      if (!pendingClaim) {
+        const error = new Error("This claim was already reviewed");
+        error.statusCode = 409;
+        throw error;
+      }
+
+      if (decision === "approved") {
+        const existingApproval = await ClaimRequest.findOne({
+          item: pendingClaim.item,
+          status: "approved",
+        }).session(session);
+
+        if (existingApproval) {
+          const error = new Error(
+            "Another claim has already been approved for this item"
+          );
+          error.statusCode = 409;
+          throw error;
+        }
+
+        const reservedItem = await Item.findOneAndUpdate(
+          {
+            _id: pendingClaim.item,
+            postedBy: req.userId,
+            state: "open",
+            claimed: false,
+            approvedClaim: null,
+          },
+          { $set: { approvedClaim: pendingClaim._id } },
+          { new: true, session, runValidators: true }
+        );
+
+        if (!reservedItem) {
+          const error = new Error(
+            "This item is no longer available or another claim was approved"
+          );
+          error.statusCode = 409;
+          throw error;
+        }
+      }
+
+      updatedClaim = await ClaimRequest.findOneAndUpdate(
+        {
+          _id: id,
+          finder: req.userId,
+          status: "pending",
+        },
+        { $set: { status: decision } },
+        { new: true, session, runValidators: true }
+      );
+
+      if (!updatedClaim) {
+        const error = new Error("This claim was already reviewed");
+        error.statusCode = 409;
+        throw error;
+      }
+
+      if (decision === "approved") {
+        await ClaimRequest.updateMany(
+          {
+            item: pendingClaim.item,
+            _id: { $ne: pendingClaim._id },
+            status: "pending",
+          },
+          {
+            $set: {
+              status: "rejected",
+              reviewMessage: "Another claim was approved for this item.",
+            },
+          },
+          { session }
+        );
+      }
+    });
 
     return res.json({
       message: `Claim ${decision}`,
       claim: updatedClaim,
     });
   } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        message: error.message,
+      });
+    }
+
     next(error);
+  } finally {
+    if (session) {
+      await session.endSession();
+    }
   }
 });
 

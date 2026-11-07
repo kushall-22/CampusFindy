@@ -295,6 +295,62 @@ router.post("/resend-verification", async (req, res, next) => {
   }
 });
 
+router.post("/feedback", authMiddleware, async (req, res, next) => {
+  try {
+    const { category, message } = req.body || {};
+    const validCategories = ["suggestion", "problem", "general"];
+
+    if (!validCategories.includes(category)) {
+      return res.status(400).json({
+        message: "Choose a valid feedback category.",
+      });
+    }
+
+    if (
+      typeof message !== "string" ||
+      message.trim().length < 10 ||
+      message.trim().length > 2000
+    ) {
+      return res.status(400).json({
+        message: "Feedback must be between 10 and 2000 characters.",
+      });
+    }
+
+    const mailer = getAuthMailer();
+    if (!mailer) {
+      return res.status(503).json({
+        message: "Feedback email is not configured on the server.",
+      });
+    }
+
+    const user = await User.findById(req.userId).select("name email");
+    if (!user) {
+      return res.status(401).json({
+        message: "Account not found. Please sign in again.",
+      });
+    }
+
+    await mailer.transporter.sendMail({
+      from: mailer.from,
+      to: process.env.FEEDBACK_TO || process.env.SMTP_USER,
+      replyTo: user.email,
+      subject: `CampusFindy feedback: ${category}`,
+      text: [
+        `Category: ${category}`,
+        `From: ${user.name} <${user.email}>`,
+        "",
+        message.trim(),
+      ].join("\n"),
+    });
+
+    return res.json({
+      message: "Thanks for your feedback. It was sent to the CampusFindy team.",
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // Request a password-reset link without revealing whether the email is registered.
 router.post("/forgot-password", async (req, res, next) => {
   try {

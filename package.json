@@ -1,7 +1,8 @@
 {
   "scripts": {
     "start": "node Frontend/server/server.js",
-    "dev": "nodemon Frontend/server/server.js"
+    "dev": "nodemon Frontend/server/server.js",
+    "test": "node --test"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

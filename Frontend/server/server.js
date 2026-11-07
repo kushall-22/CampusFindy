@@ -16,6 +16,16 @@ const adminRoutes = require("./routes/adminRoutes");
 const app = express();
 
 app.disable("x-powered-by");
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  if (process.env.NODE_ENV === "production") {
+    res.setHeader("Strict-Transport-Security", "max-age=31536000");
+  }
+  next();
+});
 
 // Validate configuration
 if (!process.env.MONGO_URI || !process.env.JWT_SECRET) {
@@ -27,10 +37,50 @@ if (process.env.JWT_SECRET.length < 32) {
 }
 
 // CORS: configure FRONTEND_URL in your environment
-const allowedOrigins = (process.env.FRONTEND_URL || "http://localhost:3000")
+const frontendUrls = (process.env.FRONTEND_URL || "http://localhost:3000")
   .split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);
+
+if (process.env.NODE_ENV === "production" && !process.env.FRONTEND_URL) {
+  throw new Error("FRONTEND_URL must be configured in production");
+}
+
+const allowedOrigins = frontendUrls.map((origin) => {
+  let url;
+  try {
+    url = new URL(origin);
+  } catch {
+    throw new Error(`Invalid frontend origin: ${origin}`);
+  }
+
+  if (
+    !["http:", "https:"].includes(url.protocol) ||
+    url.username ||
+    url.password ||
+    url.origin !== origin.replace(/\/+$/, "")
+  ) {
+    throw new Error(`FRONTEND_URL entries must be valid origins: ${origin}`);
+  }
+
+  if (process.env.NODE_ENV === "production" && url.protocol !== "https:") {
+    throw new Error("Production FRONTEND_URL entries must use HTTPS");
+  }
+
+  return url.origin;
+});
+
+if (allowedOrigins.length === 0) {
+  throw new Error("At least one FRONTEND_URL origin must be configured");
+}
+
+if (process.env.TRUST_PROXY_HOPS !== undefined) {
+  const trustProxyHops = Number(process.env.TRUST_PROXY_HOPS);
+  if (!Number.isInteger(trustProxyHops) || trustProxyHops < 1) {
+    throw new Error("TRUST_PROXY_HOPS must be a positive integer");
+  }
+  app.set("trust proxy", trustProxyHops);
+}
 
 app.use(
   cors({
@@ -48,6 +98,14 @@ app.use(
 );
 
 app.use(express.json({ limit: "20kb" }));
+
+app.get("/api/health", (req, res) => {
+  const databaseReady = mongoose.connection.readyState === 1;
+  res.status(databaseReady ? 200 : 503).json({
+    status: databaseReady ? "ok" : "unavailable",
+    database: databaseReady ? "connected" : "disconnected",
+  });
+});
 
 // General API rate limit
 const apiLimiter = rateLimit({
@@ -73,6 +131,7 @@ app.use("/api/auth/login", authLimiter);
 app.use("/api/auth/signup", authLimiter);
 app.use("/api/auth/verify-email", authLimiter);
 app.use("/api/auth/resend-verification", authLimiter);
+app.use("/api/auth/feedback", authLimiter);
 app.use("/api/auth/forgot-password", authLimiter);
 app.use("/api/auth/reset-password", authLimiter);
 

@@ -11,24 +11,30 @@ const list = document.getElementById("requestList");
 
 let claimsList = [];
 let currentIndex = 0;
+let actionStatus;
 
 async function loadRequests() {
   try {
     const res = await fetch(`${window.CAMPUSFINDY_API_BASE}/claims/received`, {
       headers: { Authorization: `Bearer ${token}` }
     });
-    const claims = await res.json();
+    const claims = await res.json().catch(() => ({}));
 
     if (!res.ok) {
       list.textContent = claims.message || "Could not load requests.";
       return;
     }
 
+    if (!Array.isArray(claims)) {
+      throw new Error("The server returned an invalid requests response.");
+    }
+
     claimsList = claims;
     currentIndex = Math.min(currentIndex, Math.max(0, claimsList.length - 1));
     showCurrent();
-  } catch (err) {
-    list.textContent = "Could not reach the server.";
+  } catch (error) {
+    console.error("Failed to load requests:", error);
+    list.textContent = error.message || "Could not reach the server.";
   }
 }
 
@@ -36,13 +42,15 @@ function makeArrow(label, disabled, onClick) {
   const btn = document.createElement("button");
   btn.className = "btn btn-primary req-arrow";
   btn.textContent = label;
+  btn.setAttribute("aria-label", label === "<" ? "Previous request" : "Next request");
   btn.disabled = disabled;
   btn.addEventListener("click", onClick);
   return btn;
 }
 
 function showCurrent() {
-  list.innerHTML = "";
+  list.replaceChildren();
+  actionStatus = null;
 
   if (claimsList.length === 0) {
     list.textContent = "No requests on your items yet.";
@@ -119,11 +127,32 @@ function makeRow(claim) {
     actions.append(makeButton("Mark as returned", "req-btn", () => send(claim._id, "return", {})));
   }
 
-  card.append(top, metaLine(who), metaLine("📝 " + claim.proof), metaLine("🗓 " + when), actions);
+  actionStatus = document.createElement("p");
+  actionStatus.className = "req-action-status";
+  actionStatus.setAttribute("role", "status");
+  actionStatus.setAttribute("aria-live", "polite");
+
+  card.append(
+    top,
+    metaLine(who),
+    metaLine("📝 " + claim.proof),
+    metaLine("🗓 " + when),
+    actions,
+    actionStatus
+  );
+  if (claim.reviewMessage) {
+    card.insertBefore(metaLine(claim.reviewMessage), actions);
+  }
   return card;
 }
 
 async function send(id, action, body) {
+  const actionButtons = list.querySelectorAll(".req-actions button");
+  actionButtons.forEach((button) => {
+    button.disabled = true;
+  });
+  actionStatus.textContent = "Updating request...";
+
   try {
     const res = await fetch(`${window.CAMPUSFINDY_API_BASE}/claims/${id}/${action}`, {
       method: "PATCH",
@@ -134,11 +163,23 @@ async function send(id, action, body) {
       body: JSON.stringify(body)
     });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) alert(data.message || "Something went wrong.");
-  } catch (err) {
-    alert("Could not reach the server.");
+    if (!res.ok) {
+      actionStatus.textContent = data.message || "Could not update this request.";
+      actionButtons.forEach((button) => {
+        button.disabled = false;
+      });
+      return;
+    }
+  } catch (error) {
+    console.error("Failed to update claim:", error);
+    actionStatus.textContent = "Could not reach the server. Please try again.";
+    actionButtons.forEach((button) => {
+      button.disabled = false;
+    });
+    return;
   }
-  loadRequests();
+
+  await loadRequests();
 }
 
 loadRequests();

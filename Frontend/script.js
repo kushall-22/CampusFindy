@@ -16,32 +16,69 @@ function createCard(item) {
   card.dataset.status = item.status;
   card.dataset.id = item._id;
 
-  const photoHtml = `<div class="note-photo"></div>`;
-  const claimedBadge = item.claimed
-    ? `<span class="claimed-badge">✔ Claimed</span>`
-    : "";
+  const photo = document.createElement("div");
+  photo.className = "note-photo";
 
-  card.innerHTML = `
-    ${photoHtml}
-    <div class="note-body">
-      <span class="note-tag">${item.status === "lost" ? "Lost" : "Found"}</span>
-      ${claimedBadge}
-      <h3 class="note-title">${item.title}</h3>
-      <p class="note-meta">${item.description}</p>
-      <p class="note-meta">📍 ${item.location}</p>
-      <p class="note-meta">🗓 ${formatDate(item.createdAt)}</p>
-    </div>
-  `;
+  const body = document.createElement("div");
+  body.className = "note-body";
+
+  const tag = document.createElement("span");
+  tag.className = "note-tag";
+  tag.textContent = item.status === "lost" ? "Lost" : "Found";
+  body.appendChild(tag);
+
+  if (item.claimed) {
+    const claimedBadge = document.createElement("span");
+    claimedBadge.className = "claimed-badge";
+    claimedBadge.textContent = "✔ Claimed";
+    body.appendChild(claimedBadge);
+  }
+
+  const title = document.createElement("h3");
+  title.className = "note-title";
+  title.textContent = item.title;
+
+  const description = document.createElement("p");
+  description.className = "note-meta";
+  description.textContent = item.description;
+
+  const location = document.createElement("p");
+  location.className = "note-meta";
+  location.textContent = `📍 ${item.location}`;
+
+  const date = document.createElement("p");
+  date.className = "note-meta";
+  date.textContent = `🗓 ${formatDate(item.createdAt)}`;
+
+  body.append(title, description, location, date);
+  card.append(photo, body);
 
   // Only found items can be clicked to claim
   if (item.claimed) {
-    card.classList.add("claimed");
-    card.style.cursor = "pointer";
+    card.classList.add("claimed", "clickable");
+    card.tabIndex = 0;
+    card.setAttribute("role", "button");
+    card.setAttribute("aria-label", `View contact for ${item.title}`);
     card.addEventListener("click", () => showClaimedContact(item));
-} else if (item.status === "found") {
-  card.style.cursor = "pointer";
-  card.addEventListener("click", () => openRequestModal(item._id));
-}
+    card.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        showClaimedContact(item);
+      }
+    });
+  } else if (item.status === "found") {
+    card.classList.add("clickable");
+    card.tabIndex = 0;
+    card.setAttribute("role", "button");
+    card.setAttribute("aria-label", `Request ${item.title}`);
+    card.addEventListener("click", () => openRequestModal(item._id));
+    card.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        openRequestModal(item._id);
+      }
+    });
+  }
 
   return card;
 }
@@ -107,14 +144,13 @@ function renderBoard(items) {
 
   if (!board) return;
 
-  board.innerHTML = "";
+  board.replaceChildren();
 
   if (items.length === 0) {
-    board.innerHTML = `
-      <div class="empty-state">
-        No items found. Try a different keyword.
-      </div>
-    `;
+    const emptyState = document.createElement("div");
+    emptyState.className = "empty-state";
+    emptyState.textContent = "No items found. Try a different keyword.";
+    board.appendChild(emptyState);
     return;
   }
 
@@ -306,18 +342,21 @@ async function loadItems() {
 
   try {
     const response = await fetch(`${window.CAMPUSFINDY_API_BASE}/items`);
-    const data = await response.json();
+    const data = await response.json().catch(() => ({}));
 
-    allItems = Array.isArray(data) ? data : data.items || [];
+    if (!response.ok) {
+      throw new Error(data.message || `Could not load items (${response.status}).`);
+    }
+
+    allItems = Array.isArray(data) ? data : data.items;
+    if (!Array.isArray(allItems)) {
+      throw new Error("The server returned an invalid items response.");
+    }
 
     applyFilters();
   } catch (err) {
     console.error("Failed to load items:", err);
-    board.innerHTML = `
-      <div class="empty-state">
-        Could not load items. Make sure your server is running.
-      </div>
-    `;
+    board.textContent = err.message || "Could not load items.";
   }
 }
 loadItems();

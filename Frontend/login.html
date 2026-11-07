@@ -32,7 +32,7 @@
     </nav>
   </header>
 
-  <div class="login-container">
+  <main class="login-container">
     <h2>Student Login</h2>
 
     <form id="loginForm">
@@ -61,16 +61,18 @@
           aria-pressed="false"
         >Show</button>
       </div>
+      <p class="login-forgot-link"><a href="forgot-password.html">Forgot password?</a></p>
 
       <button type="submit" class="btn btn-primary" id="loginButton">Login</button>
     </form>
 
-    <p><a href="forgot-password.html">Forgot password?</a></p>
-    <p><a href="verify-email.html">Enter verification code or resend it</a></p>
-    <p>New here? <a href="signup.html">Create an account</a></p>
+    <div class="login-secondary-links">
+      <p><a href="verify-email.html">Enter verification code or resend it</a></p>
+      <p>New here? <a href="signup.html">Create an account</a></p>
+    </div>
 
     <p id="errorMsg" role="status" aria-live="polite"></p>
-  </div>
+  </main>
 
   <footer>
     <mark>CampusFindy — built by students, for students.</mark>

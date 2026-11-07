@@ -22,7 +22,7 @@
     </a>
     <nav class="nav-links" aria-label="Main navigation">
       <button type="button" class="btn btn-nav theme-toggle" id="themeToggle">☾ Dark</button>
-      <button type="button" class="btn btn-nav menu-item" id="myPostsBtn">MyPosts</button>
+      <button type="button" class="btn btn-nav menu-item" id="myPostsBtn">My Posts</button>
       <div class="menu-wrap">
         <button type="button" class="btn menu-btn" id="menuBtn" aria-label="More options" aria-haspopup="true" aria-expanded="false">⋮</button>
         <div class="menu-dropdown" id="menuDropdown" hidden>
@@ -37,13 +37,52 @@
 
   <section class="hero">
     <h1>Because lost shouldn't mean gone.</h1>
-    <p>Lost something on campus? Found something that isn't yours? Campus Findy helps students report and recover lost items quickly and easily.</p>
+    <p>Lost something on campus? Found something that isn't yours? CampusFindy helps students report and recover lost items quickly and easily.</p>
   </section>
 
   <div class="board-strip">
     <div class="filter-row">
-      <input type="text" id="searchInput" placeholder="Search by item name or location...">
+      <label class="filter-field filter-search" for="searchInput">
+        <span>Search items</span>
+        <input type="search" id="searchInput" placeholder="Name or description">
+      </label>
+      <label class="filter-field" for="statusFilter">
+        <span>Type</span>
+        <select id="statusFilter">
+          <option value="found">Found items</option>
+          <option value="lost">Lost items</option>
+          <option value="all">All items</option>
+        </select>
+      </label>
+      <label class="filter-field" for="categoryFilter">
+        <span>Category</span>
+        <select id="categoryFilter">
+          <option value="all">All categories</option>
+          <option value="electronics">Electronics</option>
+          <option value="bag">Bag / backpack</option>
+          <option value="id-card">ID card / documents</option>
+          <option value="clothing">Clothing / accessories</option>
+          <option value="books">Books / stationery</option>
+          <option value="other">Other</option>
+        </select>
+      </label>
+      <label class="filter-field filter-location" for="locationFilter">
+        <span>Location</span>
+        <input type="search" id="locationFilter" placeholder="e.g. Library">
+      </label>
+      <label class="filter-field" for="dateFromFilter">
+        <span>Posted from</span>
+        <input type="date" id="dateFromFilter">
+      </label>
+      <label class="filter-field" for="dateToFilter">
+        <span>Posted to</span>
+        <input type="date" id="dateToFilter">
+      </label>
       <a class="btn btn-primary report-btn" href="post.html">+ Report item</a>
+    </div>
+    <div class="filter-summary">
+      <p id="resultsSummary" role="status" aria-live="polite"></p>
+      <button type="button" class="filter-reset" id="clearFiltersBtn">Clear filters</button>
     </div>
   </div>
 
@@ -62,7 +101,7 @@
         <textarea id="requestProof" rows="4" placeholder="e.g. black wallet with a blue ID card inside"></textarea>
       </div>
 
-      <p id="requestMsg"></p>
+      <p id="requestMsg" role="status" aria-live="polite"></p>
 
       <div class="dlg-actions">
         <button type="button" id="requestCancelBtn" class="btn btn-ghost dlg-btn ghost">Cancel</button>
@@ -87,6 +126,7 @@
 
   <footer>
     <mark>CampusFindy — built by students, for students.</mark>
+    <a class="footer-feedback" href="feedback.html">Share feedback</a>
     <div class="watermark"><i>kushall</i></div>
   </footer>
 

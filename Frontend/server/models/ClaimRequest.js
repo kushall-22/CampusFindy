@@ -38,6 +38,12 @@ const claimRequestSchema = new mongoose.Schema(
       index: true,
     },
 
+    reviewMessage: {
+      type: String,
+      maxlength: 200,
+      default: null,
+    },
+
     returnedAt: {
       type: Date,
       default: null,

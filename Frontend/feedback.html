@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Share Feedback - CampusFindy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/x-icon" href="CampusFindly.ico">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    if (!localStorage.getItem("token")) window.location.replace("login.html");
+  </script>
+</head>
+<body class="page-bg">
+  <header class="topbar">
+    <a class="brand" href="dashboard.html">
+      <span class="brand-logo" aria-hidden="true"></span>
+      <span>ampusFindy</span>
+    </a>
+    <nav class="nav-links" aria-label="Main navigation">
+      <a href="dashboard.html">Dashboard</a>
+      <button type="button" class="btn btn-nav theme-toggle" id="themeToggle">☾ Dark</button>
+    </nav>
+  </header>
+
+  <main class="form-wrap">
+    <h1>Share your feedback</h1>
+    <p class="sub">Your feedback goes directly to the CampusFindy team and helps improve the app.</p>
+    <form id="feedbackForm">
+      <div class="field">
+        <label for="feedbackCategory">What is your feedback about?</label>
+        <select id="feedbackCategory" required>
+          <option value="suggestion">Suggestion</option>
+          <option value="problem">Problem or bug</option>
+          <option value="general">General feedback</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="feedbackMessage">Your feedback</label>
+        <textarea
+          id="feedbackMessage"
+          rows="6"
+          placeholder="Tell us what works well or what we could improve..."
+          required
+        ></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary submit-btn" id="sendFeedbackBtn">
+        Send feedback
+      </button>
+    </form>
+    <p id="feedbackStatus" role="status" aria-live="polite"></p>
+  </main>
+
+  <footer>
+    <mark>CampusFindy — built by students, for students.</mark>
+  </footer>
+
+  <script src="theme.js"></script>
+  <script src="api-config.js"></script>
+  <script src="feedback.js"></script>
+</body>
+</html>

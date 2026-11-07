@@ -22,26 +22,35 @@
     </nav>
   </header>
 
-  <main class="login-container">
+  <main class="login-container verification-container">
     <h2>Verify your email</h2>
-    <p id="statusMessage" role="status" aria-live="polite">
-      Enter the 6-digit code sent to your email address.
+    <p class="verification-intro" id="verificationIntro">
+      Enter the 6-digit code we sent to your email.
     </p>
-    <form id="verifyEmailForm">
-      <input type="email" id="email" placeholder="College Email" autocomplete="email" required>
-      <input
-        type="text"
-        id="code"
-        placeholder="6-digit verification code"
-        inputmode="numeric"
-        autocomplete="one-time-code"
-        maxlength="6"
-        aria-label="6-digit verification code"
-      >
-      <button type="submit" class="btn btn-primary" value="verify">Verify email</button>
-      <button type="submit" class="btn btn-outline" value="resend">Resend code</button>
+    <form id="verifyEmailForm" novalidate>
+      <label class="verification-email-fallback" id="emailFallback" for="emailInput" hidden>
+        Email address
+        <input type="email" id="emailInput" placeholder="College Email" autocomplete="email">
+      </label>
+
+      <fieldset class="verification-code-field">
+        <legend>Verification code</legend>
+        <div class="verification-code-inputs" id="codeInputs" role="group" aria-label="6-digit verification code">
+          <input type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" aria-label="Digit 1" required>
+          <input type="text" inputmode="numeric" maxlength="1" aria-label="Digit 2" required>
+          <input type="text" inputmode="numeric" maxlength="1" aria-label="Digit 3" required>
+          <input type="text" inputmode="numeric" maxlength="1" aria-label="Digit 4" required>
+          <input type="text" inputmode="numeric" maxlength="1" aria-label="Digit 5" required>
+          <input type="text" inputmode="numeric" maxlength="1" aria-label="Digit 6" required>
+        </div>
+      </fieldset>
+      <p class="verification-expiry">Code expires in 10 minutes.</p>
+      <button type="submit" class="btn btn-primary" id="verifyButton">Verify</button>
     </form>
-    <p><a href="login.html">Back to login</a></p>
+    <div class="verification-secondary">
+      <p>Didn’t receive a code? <button type="button" class="verification-resend" id="resendCodeBtn">Resend code</button></p>
+      <p><a href="login.html">← Back to sign in</a></p>
+    </div>
   </main>
 
   <footer>

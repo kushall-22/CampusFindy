@@ -108,6 +108,7 @@ router.get("/", async (req, res, next) => {
     const items = await Item.find({
       state: "open",
       claimed: false,
+      approvedClaim: null,
     })
       .select("-contactInfo -verificationAnswer -verificationQuestion")
       .populate("postedBy", "name")
@@ -133,8 +134,8 @@ router.get(
         });
       }
 
-      const item = await Item.findById(req.params.id)
-        .select("+contactInfo");
+        const item = await Item.findById(req.params.id)
+          .select("+contactInfo +approvedClaim");
 
       if (!item) {
         return res.status(404).json({
@@ -148,7 +149,11 @@ router.get(
         status: { $in: ["approved", "returned"] },
       }).select("_id");
 
-      if (!claim) {
+      if (
+        !claim ||
+        (item.approvedClaim &&
+          String(item.approvedClaim) !== String(claim._id))
+      ) {
         return res.status(403).json({
           message: "An approved claim is required",
         });

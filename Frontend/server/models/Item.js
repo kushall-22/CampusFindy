@@ -70,6 +70,13 @@ const itemSchema = new mongoose.Schema(
       default: null,
     },
 
+    approvedClaim: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "ClaimRequest",
+      default: null,
+      select: false,
+    },
+
     verificationQuestion: {
       type: String,
       trim: true,

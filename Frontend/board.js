@@ -1,5 +1,12 @@
 const board = document.getElementById("board");
 const searchInput = document.getElementById("searchInput");
+const statusFilter = document.getElementById("statusFilter");
+const categoryFilter = document.getElementById("categoryFilter");
+const locationFilter = document.getElementById("locationFilter");
+const dateFromFilter = document.getElementById("dateFromFilter");
+const dateToFilter = document.getElementById("dateToFilter");
+const resultsSummary = document.getElementById("resultsSummary");
+const clearFiltersBtn = document.getElementById("clearFiltersBtn");
 const requestModal = document.getElementById("requestModal");
 const requestItemId = document.getElementById("requestItemId");
 const requestProof = document.getElementById("requestProof");
@@ -16,6 +23,11 @@ const boardWords = (params.get("q") || "")
 
 let allItems = [];
 let requestSubmitted = false;
+let requestTrigger = null;
+
+const defaultStatusFilter =
+  boardMode === "lost" ? "found" : boardMode === "found" ? "lost" : "found";
+statusFilter.value = defaultStatusFilter;
 
 function formatDate(value) {
   if (!value) return "";
@@ -85,10 +97,39 @@ function createCard(item) {
 
 function renderItems() {
   const queryWords = searchInput.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const locationQuery = locationFilter.value.trim().toLowerCase();
+  const fromDate = dateFromFilter.value
+    ? new Date(`${dateFromFilter.value}T00:00:00`)
+    : null;
+  const toDate = dateToFilter.value
+    ? new Date(`${dateToFilter.value}T23:59:59.999`)
+    : null;
   const filteredItems = allItems.filter((item) => {
-    if (boardMode === "lost" && item.status !== "found") return false;
-    if (boardMode === "found" && item.status !== "lost") return false;
-    if (!boardMode && item.status !== "found") return false;
+    if (statusFilter.value !== "all" && item.status !== statusFilter.value) {
+      return false;
+    }
+
+    if (
+      categoryFilter.value !== "all" &&
+      (item.category || "other").toLowerCase() !== categoryFilter.value
+    ) {
+      return false;
+    }
+
+    if (
+      locationQuery &&
+      !String(item.location || "").toLowerCase().includes(locationQuery)
+    ) {
+      return false;
+    }
+
+    const postedAt = new Date(item.createdAt);
+    if (fromDate && (!Number.isFinite(postedAt.getTime()) || postedAt < fromDate)) {
+      return false;
+    }
+    if (toDate && (!Number.isFinite(postedAt.getTime()) || postedAt > toDate)) {
+      return false;
+    }
 
     const searchableText =
       `${item.title} ${item.location} ${item.description}`.toLowerCase();
@@ -104,11 +145,33 @@ function renderItems() {
   });
 
   board.replaceChildren();
+  resultsSummary.textContent =
+    `${filteredItems.length} ${filteredItems.length === 1 ? "item" : "items"} found`;
 
   if (filteredItems.length === 0) {
     const emptyState = document.createElement("div");
     emptyState.className = "empty-state";
-    emptyState.textContent = "No matching items found. Try a different keyword.";
+    const message = document.createElement("p");
+    message.textContent = allItems.length
+      ? "No items match these filters. Try changing or clearing them."
+      : "There are no items posted yet. Be the first to report one.";
+    emptyState.appendChild(message);
+
+    if (allItems.length) {
+      const clearButton = document.createElement("button");
+      clearButton.type = "button";
+      clearButton.className = "btn btn-outline";
+      clearButton.textContent = "Clear filters";
+      clearButton.addEventListener("click", clearFilters);
+      emptyState.appendChild(clearButton);
+    } else {
+      const reportLink = document.createElement("a");
+      reportLink.className = "btn btn-primary";
+      reportLink.href = "post.html";
+      reportLink.textContent = "Report an item";
+      emptyState.appendChild(reportLink);
+    }
+
     board.appendChild(emptyState);
     return;
   }
@@ -116,7 +179,18 @@ function renderItems() {
   filteredItems.forEach((item) => board.appendChild(createCard(item)));
 }
 
+function clearFilters() {
+  searchInput.value = "";
+  statusFilter.value = defaultStatusFilter;
+  categoryFilter.value = "all";
+  locationFilter.value = "";
+  dateFromFilter.value = "";
+  dateToFilter.value = "";
+  renderItems();
+}
+
 function openRequest(itemId) {
+  requestTrigger = document.activeElement;
   requestItemId.value = itemId;
   requestProof.value = "";
   requestMsg.textContent = "";
@@ -129,6 +203,9 @@ function openRequest(itemId) {
 
 function closeRequest() {
   requestModal.hidden = true;
+  if (requestTrigger instanceof HTMLElement) {
+    requestTrigger.focus();
+  }
 }
 
 async function loadItems() {
@@ -195,7 +272,7 @@ async function submitRequest() {
     requestSubmitted = true;
     requestMsg.textContent =
       `${data.message || "Request sent to the finder."} ` +
-      `Finder contact: ${data.contactInfo || "Contact information is unavailable."}`;
+      "The finder will review your request. Contact details are available after approval.";
     requestProof.value = "";
     requestSendBtn.textContent = "Request sent";
   } catch (error) {
@@ -207,6 +284,11 @@ async function submitRequest() {
 }
 
 searchInput.addEventListener("input", renderItems);
+[statusFilter, categoryFilter, dateFromFilter, dateToFilter].forEach((filter) => {
+  filter.addEventListener("change", renderItems);
+});
+locationFilter.addEventListener("input", renderItems);
+clearFiltersBtn.addEventListener("click", clearFilters);
 requestSendBtn.addEventListener("click", submitRequest);
 requestCancelBtn.addEventListener("click", closeRequest);
 
@@ -215,7 +297,28 @@ requestModal.addEventListener("click", (event) => {
 });
 
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape" && !requestModal.hidden) closeRequest();
+  if (requestModal.hidden) return;
+
+  if (event.key === "Escape") {
+    closeRequest();
+    return;
+  }
+
+  if (event.key === "Tab") {
+    const focusable = requestModal.querySelectorAll(
+      'button:not([disabled]), textarea:not([disabled]), input:not([type="hidden"]):not([disabled])'
+    );
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
 });
 
 loadItems();
